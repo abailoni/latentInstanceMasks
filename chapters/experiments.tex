@@ -9,7 +9,14 @@ boundary pixels \cite{beier2017multicut,ciresan2012deep} or undirected affinitie
 \TODO{Recap of what we do}
 
 \subsection{Data: CREMI challenge} \label{sec:cremi_challenge}
-We evaluate the proposed method on the competitive CREMI 2016 EM Segmentation Challenge \cite{cremiChallenge} that is currently the neuron segmentation challenge with the largest amount of training data available. The dataset comes from serial section EM of \emph{Drosophila} fruit-fly tissue and consists of 6 volumes of 1250x1250x125 voxels at resolution 4x4x40nm, three of which come with publicly available training ground truth. The results submitted to the leaderboard are evaluated using the CREMI score, which is given by the geometric mean of Variation of Information Score (VOI split + VOI merge \cite{arganda2015crowdsourcing}) and Adapted Rand-Score (Rand-Score), two popular metrics used to evaluate clusterings.
+We evaluate the proposed method on the competitive CREMI 2016 EM Segmentation Challenge \cite{cremiChallenge} that is currently the neuron segmentation challenge with the largest amount of training data available. The dataset comes from serial section EM of \emph{Drosophila} fruit-fly tissue and consists of 6 volumes of 1250x1250x125 voxels at resolution 4x4x40nm, three of which come with publicly available training ground truth. The results submitted to the leaderboard are evaluated using the CREMI score, which is given by the geometric mean of Variation of Information Score (VOI split + VOI merge \cite{arganda2015crowdsourcing}) and Adapted Rand-Score (Rand-Score), two popular metrics used to evaluate clusterings.\\
 
+The data from the CREMI challenge is highly anisotropic and contains artifacts like missing sections, staining precipitations and support film folds. 
+To alleviate difficulties stemming from misalignment, we use a version of the data that was elastically realigned by the challenge organizers with the method of \cite{saalfeld2012elastic}.
+We train a 3D U-Net \cite{ronneberger2015u, cciccek20163d} \UPDATE{using the same architecture as \cite{funke2018large} and predict long-and-short range affinities 
+as described in \cite{lee2017superhuman}}. In addition to the standard data augmentation techniques of random rotations, random flips and  elastic deformations, we simulate data artifacts.
+In more detail, we randomly zero-out slices, decrease the contrast of slices, simulate tears, introduce alignment jitter and paste artifacts extracted from the training data. Both \cite{funke2018large} and \cite{lee2017superhuman} have shown
+that these kinds of augmentations can help to alleviate issues caused by EM-imaging artifacts.
+We use Adam optimizer to train the network. The model was trained on all the three samples with available ground truth labels.  
 
 \subsubsection{Predicting glia neurons}
