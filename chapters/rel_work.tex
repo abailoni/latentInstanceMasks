@@ -1,11 +1,20 @@
 % !TEX root = ../patchEmbeddings_review.tex
 
 \section{Related work} \label{sec:related_work}
-\TODO{restructure, to be completed}
+\TODO{restructure, to be rewritten}
 
 \textbf{Proposal-based methods} have been highly successful in instance segmentation competitions like MS COCO \cite{lin2014microsoft}, Pascal VOC2012 \cite{everingham2010pascal} and CityScapes \cite{cordts2016cityscapes}. They decompose the instance segmentation task into two steps that consists in generating object proposals and assigning to each bounding box a class and a binary segmentation mask \cite{he2017mask,porzi2019seamless,liu2018path,yang2012layered,li2017fully,ladicky2010and,hariharan2014simultaneous,chen2015multi,dai2016instance,liang2016reversible}. 
 % They commonly rely on {Faster-RCNN}~\cite{ren2015faster} and can be trained end-to-end using non-maximum suppression. 
 Other methods use instead recurrent models to sequentially generate instances one-by-one \cite{romera2016recurrent,ren2017end}.
+
+\begin{figure}[t]
+\centering
+        % \includegraphics[width=0.4\textwidth,trim=0.25in 0.25in 0.68in 0.36in,clip]{./figs/SSBM_experiments.pdf} % 0.45
+        \includegraphics[width=\textwidth]{./figs/masks_explained.jpg} % 0.45
+        \caption{Comparison between sparse affinities and encoded probability masks...}
+    \label{fig:encoding_masks}
+\end{figure}
+
 
 \textbf{Proposal-free methods} adopt a bottom-up approach by directly grouping pixels into instances. Recently, there has been a growing interest for such  methods that do not involve object detection, since, in certain types of data, object instances cannot be approximated by bounding boxes. For example, the approach proposed in \cite{kirillov2017instancecut} uses a combinatorial framework for instance segmentation, 
 % SGN \cite{liu2017sgn} sequentially group pixels into lines and then instances;
@@ -30,3 +39,5 @@ Extra approaches based signed graphs: Modern integer linear programming solvers 
 proposal-free methods \cite{liu2018affinity,wolf2018mutex,lee2017superhuman} to predict long-range relationships between pixels.
 
 \TODO{} patchPerPix, embeddings on connectomics, SSAP
+
+

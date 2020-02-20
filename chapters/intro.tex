@@ -14,10 +14,10 @@ In this work, we focus on a proposal-free method, where a Convolutional Neural N
 
 A naive way to predict one $N\times N$ \patch  for each pixel in an image would be to use a fully convolutional model with $N^2$ output channels, where each channel represents a pixel of the corresponding mask. However, depending on the size of the predicted masks, this approach would become unfeasible and extremely memory-consuming.
 
-Our first main contribution is a fully convolutional model that predicts, for every pixel $i$, a representation of the associated $i$-th self-probability mask in a lower dimensional space (see Fig. \ref{fig:main_figure}). This is possible due to the fact that, among all possible neighborhood structures represented by local self-probability masks, only few of them are associated to occurring ground truth binary masks. Thus, the information included in the predicted self-probability masks can easily be encoded in a lower dimensional latent space. 
+Our first contribution is a fully convolutional model that predicts, for every pixel $i$, a representation of the associated $i$-th self-probability mask in a lower dimensional space (see Fig. \ref{fig:main_figure}). This is possible due to the fact that, among all possible neighborhood structures represented by local self-probability masks, only few of them are associated to occurring ground truth binary masks. Thus, the information included in the predicted self-probability masks can easily be encoded in a lower dimensional latent space. 
 
 A very similar approach has been recently proposed in concurrent (currently unpublished) work \cite{hirsch2020patchperpix}, where it has been applied to the BBBC010 benchmark microscopy dataset of \emph{C. elegans} worms. In this paper, we propose a more efficient model and apply it to large 3D electron microscopy image volumes of neuron tissue in order to perform neuron segmentation. 
-We compare its performances to the commonly used instance segmentation method of predicting, for each pixel, a small set of sparse short- and long-range neighborhood relations, i.e. affinities representing how likely it is for a pair of pixels to belong to the same object instance (see Fig. \ref{fig:main_figure} for a visual comparison).
+\emph{We compare its performances to the commonly used instance segmentation method of predicting, for each pixel, a small set of sparse short- and long-range neighborhood relations, i.e. affinities representing how likely it is for a pair of pixels to belong to the same object instance (see Fig. \ref{fig:main_figure} for a visual comparison).}
 % \cite{liu2018affinity,wolf2018mutex} etc
 % it achieves competitive performance on CityScapes and the challenging CREMI 2016 segmentation benchmark.
 
@@ -25,6 +25,12 @@ As a second contribution, we propose two distinct ways of converting the predict
 One of the two methods results in a pipeline that is as efficient as the currently winning method of the CREMI challenge \emph{(more efficient actually, because of LMC...), but achieves better accuracies and, as our results shows, outputs more consistent neighborhood structures...}.
 The second proposed method yields a parameter-free algorithm achieving competitive performances, yada yada yada... 
 
-
+\begin{figure}[t]
+\centering
+        % \includegraphics[width=0.4\textwidth,trim=0.25in 0.25in 0.68in 0.36in,clip]{./figs/SSBM_experiments.pdf} % 0.45
+        \includegraphics[width=\textwidth]{./figs/main_image.pdf} % 0.45
+        \caption{Illustration of the proposed pipeline...}
+    \label{fig:alg_explained}
+\end{figure}
 
 

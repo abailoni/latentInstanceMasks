@@ -16,38 +16,44 @@ In total, if the input image has $H\times W$ pixels, we predict $M\times N \time
 0, \quad &\text{if } \hat{L}_i \neq \hat{L}_j. 
 \end{cases}
 \end{equation}
-Note that these definitions can be easily generalized from 2D to 3D.
+Note that these definitions can be easily generalized to 3D images.
 
 \subsection{Encoding self-probability ground-truth masks}\label{sec:encoding_masks}
 We first note that, among all feasible binary masks $\hat{\mathbf{m}} \in \{0,1\}^{M\times N}$, in practice only a part of them represent real occurring neighborhood structures. 
 This suggests that it is possible to compress the masks to a lower dimensional space. 
 
-In order to test this assumption, we then compressed binary ground-truth masks $\hat{\mathbf{m}}_i$ to latent variables $z_i\in \mathbb{R}^Q$ by training a convolutional Variational Auto-encoder (VAE) \cite{kingma2013auto,rezende2014stochastic} consisting of an encoder $p_{\phi}(z_i|\hat{\mathbf{m}}_i)$ and a decoder $p_{\phi}(\hat{\mathbf{m}}_i|z_i)$.
-In our experiments, we evaluate how the dimension $Q$ of the latent space impacts the quality of the reconstructed binary masks and found in this way an optimal latent space dimension that is compact enough but at the same time preserves most of the information contained in the binary patches.
+In order to test this assumption, we then compress binary ground-truth masks $\hat{\mathbf{m}}_i$ to latent variables $z_i\in \mathbb{R}^Q$ by training a convolutional Variational Auto-encoder (VAE) \cite{kingma2013auto,rezende2014stochastic} consisting of an encoder $p_{\phi}(z_i|\hat{\mathbf{m}}_i)$ and a decoder $p_{\phi}(\hat{\mathbf{m}}_i|z_i)$.
+In our experiments, we evaluate how the dimension $Q$ of the latent space impacts the quality of the reconstructed binary masks and find in this way an optimal latent space dimension that is compact enough but at the same time preserves most of the information contained in the binary masks.
 
 \subsection{Predicting encoded self-probability masks} \label{sec:model_and_loss}
-Given an input image, the model proposed in this work is trained to predict for each pixel $i$ the latent vector $z_i\in \mathbb{R}^Q$ encoding the associated self-probability mask $\mathbf{m}_i$. Thus, if the input image has shape $H\times W$, the fully convolutional model outputs a feature map with shape $Q\times H\times W$. 
-Note that this yields a much more compact model as compared to directly predicting all the $M\times N$ patches with a final output feature map of size $M\times N\times H\times W$.
+Given an input image, the model proposed in this work is trained to predict, for each pixel $i$, one latent vector $z_i\in \mathbb{R}^Q$ encoding the associated self-probability mask $\mathbf{m}_i$. Thus, if the input image has shape $H\times W$, the fully convolutional model outputs a feature map with shape $Q\times H\times W$. 
+Note that this yields a much more compact model as compared to directly predicting all the $M\times N$-masks with a final output feature map of size $M\times N\times H\times W$.
 
-Similarly to concurrent recent work \cite{hirsch2020patchperpix}, we tested two ways of training the proposed model. \\
+Similarly to concurrent recent work \cite{hirsch2020patchperpix}, we test two ways of training the proposed model. \\
 
-\textbf{Training VAE and model separately} -- In the first case, we trained a VAE to encode ground-truth binary masks as explained above in Sec. \ref{sec:encoding_masks}. The main model was then trained to predict, for each pixel, the latent vector $z_i$ given by the encoded version of the ground truth binary mask predicted by the VAE model:
-L2 loss between the predicted latent vector of the model $\tilde{z}_i$ and the encoded version of the associated ground truth binary mask $p_{\phi}()$
-\begin{equation}
-\mathcal{J}^A_{\mathrm{Loss}} = \sum_{i\in H\times W} ()^2
-\end{equation}
+\textbf{Training VAE and backbone model separately} -- In this case, we first train a VAE to encode ground-truth binary masks as explained above in Sec. \ref{sec:encoding_masks}. 
+The main backbone model (part a. of Fig. \ref{fig:main_figure}) is then trained to predict, for each pixel $i$, the mean and the standard deviation of the encoded distribution $p_{\phi}(z_i|\hat{\mathbf{m}}_i)$ predicted by the pre-trained encoder, where $\hat{\mathbf{m}}_i$ is the ground truth self-probability mask associated to pixel $i$. An L2 loss is used to pull the two encoded vectors together. 
+The reasoning behind this approach is to train the backbone model to predict the masks in a meaningful compressed latent space. 
+Nevertheless, as we will show in our experiments, this method was the least successful among the tested ones (\emph{similarly to the findings of \cite{hirsch2020patchperpix}}).\\
+% L2 loss between the predicted latent vector of the model $\tilde{z}_i$ and the encoded version of the associated ground truth binary mask $p_{\phi}()$
+% \begin{equation}
+% \mathcal{J}^A_{\mathrm{Loss}} = \sum_{i\in H\times W} ()^2
+% \end{equation}
 
 
 \textbf{Training encoded self-probability masks end-to-end} --
-We define the loss according to the S\o rensen-Dice coefficient \cite{dice1945measures,sorensen1948method} formulated for fuzzy set membership values:
+In this second setup, the backbone model is trained end-to-end to predict a low-dimensional representation of the masks by applying a binary classification loss directly on decoded patches (see pipeline shown in Fig. \ref{fig:main_figure}). 
+More specifically, we randomly sample $K$ pixels and their associated encoded masks $z_1, \ldots, z_K$ from the output of the backbone-model and retrieve the associated masks $\mathbf{m}_1, \ldots, \mathbf{m}_K$ by applying a convolutional decoder to each of them. 
+The training loss is defined according to the S\o rensen-Dice coefficient \cite{dice1945measures,sorensen1948method} formulated for fuzzy set membership values:
 \begin{equation}
-\mathcal{J}^B_{\mathrm{Loss}} = \frac{\sum_{i\in H\times W} \sum_{j\in M\times N} (1-\mathbf{m}_i[j])(1-\hat{\mathbf{m}}_i[j])}{\sum_{i\in H\times W} \sum_{j\in M\times N} \big( (1-\mathbf{m}_i[j])^2 + (1-\hat{\mathbf{m}}_i[j])^2 \big)}
+\mathcal{J}^B_{\mathrm{Loss}} = \frac{\sum_{i=1}^K \sum_{j\in M\times N} (1-\mathbf{m}_i[j])(1-\hat{\mathbf{m}}_i[j])}{\sum_{i=1}^K \sum_{j\in M\times N} \big( (1-\mathbf{m}_i[j])^2 + (1-\hat{\mathbf{m}}_i[j])^2 \big)}.
 \end{equation} 
-This type of loss, as compared to L2 or binary cross-entropy losses, is more robust against class imbalance and prediction/target sparsity.
-Sampling some pixels...
+This type of loss, as compared to L2 or binary cross-entropy losses, is more robust against class imbalance and prediction/target sparsity and delivered better results for our applications.
+Note that, in this setup, no convolutional encoder is trained.
 
 \subsection{Multi-scale self-probability masks}\label{sec:multiscale_patches}
-As main architecture, we used a (3D) U-Net \cite{ronneberger2015u, cciccek20163d} that is one of the most common choices for applications to biological and medical images \textbf{REFS}.
+\TODO{To be completed}
+As architecture for the main backbone model, we used a 3D U-Net \cite{ronneberger2015u, cciccek20163d}, which is one of the most common choices for applications to biological and medical images.
 As we show in Fig. \ref{fig:main}, the model is trained to predict latent vectors $z_i$ at different depth levels of the UNet-decoder path...
 
 
