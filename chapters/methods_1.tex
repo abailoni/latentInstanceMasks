@@ -7,8 +7,38 @@
         \caption{Illustration of the proposed parameter-free method to convert self-probability masks to edge weights...}
     \label{fig:alg_explained}
 \end{figure}
+\begin{algorithm}[t]
+  \begin{flushleft}
+  \caption{: Computing affinities from self-probability masks}
+   \hspace*{\algorithmicindent} \textbf{Input:} Graph $\mathcal{G}(V,E)$; local self-probability masks $\mathcal{M}_{\mathbf{x}}: \mathcal{N}_{K\times K} \rightarrow [0,1]$  \\
+  \hspace*{\algorithmicindent} \textbf{Output:} Affinities $\bar{a}_e\in[0,1]$ with variance $\sigma^2_e$ for all edges $e\in E$\\
+  \hspace*{\algorithmicindent} 
+  \begin{algorithmic}[1]
+  \footnotesize
+  % \small
+      % \State Initial clustering: $\Pi=\{\{v_1\}, \ldots, \{v_{|V|}\}\}$
+      % \State Initialize interactions between clusters with $ = w^+_e - w^-_e$
+      \For{each edge $e\in E$ in graph $\mathcal{G}$}
+        \State Get coordinates $\mathbf{x}=(x_1,x_2)$ and $\mathbf{y}=(y_1,y_2)$ of pixels linked by edge $e$
+        \State Init. accumulation sets $\mathcal{A}=\{\}$ for affinities and $\mathcal{W}=\{\}$ for reliability weights
+        \For{each mask $\mathcal{M}_{\mathbf{c}}$ covering both pixel $\mathbf{x}$ and pixel $\mathbf{y}$}
+            \State Get relative coords. $\delta_\mathbf{x}$ and $\delta_\mathbf{y}$ with respect to the center $\mathbf{c}$ of the mask $\mathcal{M}_{\mathbf{c}}$
+            \State $\mathcal{A}\,\gets \mathcal{A} \,\cup\,\{\min \big(\mathcal{M}_{\mathbf{c}}(\delta_\mathbf{x}), \,\mathcal{M}_{\mathbf{c}}(\delta_\mathbf{y})\big)\}$ \Comment{Fuzzy-AND: both values active}
+            \State $\mathcal{W}\gets \mathcal{W} \,\cup\,\{\max \big(\mathcal{M}_{\mathbf{c}}(\delta_\mathbf{x}), \,\mathcal{M}_{\mathbf{c}}(\delta_\mathbf{y})\big)\}$ \Comment{Fuzzy-OR: at least one value active}
+        \EndFor
+        \State Get weighted average $\bar{a}_e= (\sum_{a\in\mathcal{A}}\sum_{w\in\mathcal{W}} \,w\cdot a)\,/\,(\sum_{w\in\mathcal{W}}\,w)$ 
+        \State Get weighted variance $\sigma^2_e = \big(\sum_{a\in\mathcal{A}}\sum_{w\in\mathcal{W}} \,w\cdot (a-\bar{a}_e)^2\big)\,/\,\big(\sum_{w\in\mathcal{W}}\,w\big)$
+      \EndFor
+      \State
+      \Return $a_e, \sigma^2_e$ for each $e\in E$
+  \end{algorithmic}
+    \label{computing_affinities}
+  \end{flushleft}
 
-\section{Converting self-probability masks to edge weights}
+\end{algorithm}
+
+\section{Computing affinities from self-probability masks}
+\TODO{To be completed}
 % A lot of recently proposed instance-segmentation methods, predict pairwise affinity between pairs of pixels 
 By predicting a self-probability mask for each pixel, the pairwise affinity between two pixels is predicted 
 
@@ -36,3 +66,6 @@ Here it would be nice to claim that hopefully the set of affinities we get out o
 
 
 The second proposed method yields a parameter-free algorithm achieving competitive performances, yada yada yada... 
+
+
+
