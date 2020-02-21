@@ -4,8 +4,35 @@
 \centering
         % \includegraphics[width=0.4\textwidth,trim=0.25in 0.25in 0.68in 0.36in,clip]{./figs/SSBM_experiments.pdf} % 0.45
         \includegraphics[width=0.7\textwidth]{./figs/alg_explaned.jpg} % 0.45
-        \caption{Converting self-probability masks to edge weights...}
+        \caption{Illustration of the proposed parameter-free method to convert self-probability masks to edge weights...}
     \label{fig:alg_explained}
 \end{figure}
 
 \section{Converting self-probability masks to edge weights}
+% A lot of recently proposed instance-segmentation methods, predict pairwise affinity between pairs of pixels 
+By predicting a self-probability mask for each pixel, the pairwise affinity between two pixels is predicted 
+
+
+One common used method is to predict a set of sparse affinities for every pixel (see Fig. \ref{fig:comparing_masks_affs}c)... 
+These can then be see as edge weights of a grid-graph where each node represents a pixel of the image. And a graph clustering algorithm is then applied to output an instance segmentation.
+In this section, we propose to ways to perform something similar and use the predicted per-pixel self-probability masks to define the edge weights of a grid-graph.
+First, in Sec. \ref{sec:efficient_affs} we propose a simple way to efficiently extract a set of sparse affinities from the predicted encoded self-probability masks, without the need to decode them one by one. Then, in Sec. \ref{sec:prob_affs}...
+
+\subsection{Efficient computation of sparse affinities from encoded masks}\label{sec:efficient_affs}
+A commonly used instance segmentation method predicts, for each pixel, a small set of sparse short- and long-range affinities representing how likely it is for a pair of pixels to belong to the same object instance (see Fig. \ref{fig:comparing_masks_affs}c).
+
+
+
+As a second contribution, we propose two distinct ways of converting the predicted per-pixel self-probability masks into edge weights of a graph representing the image, so that each node corresponds to a pixel and a graph clustering algorithm is then used to output an instance segmentation.
+
+Here it would be nice to claim that hopefully the set of affinities we get out of this leads to more consistent neighborhood structures as compared to directly predicting each affinity as an output channel of the main model
+
+\subsection{Averaged }\label{sec:prob_affs}
+\begin{itemize}
+\item Every patch predicts $M\times N$ affinities between the central pixel and the neighboring ones. But can we do better?
+\item Defining the graph: we have an edge between two nodes $(i, j)$ only if $j \in M\times N$ Given two pixels  
+\end{itemize}
+- 
+
+
+The second proposed method yields a parameter-free algorithm achieving competitive performances, yada yada yada... 
