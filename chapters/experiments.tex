@@ -6,7 +6,8 @@ We first evaluate and compare our method on the task of neuron segmentation in e
 EM segmentation is commonly performed by first predicting 
 boundary pixels \cite{beier2017multicut,ciresan2012deep} or undirected affinities \cite{wolf2018mutex,lee2017superhuman,funke2018large}, which represent how likely it is for a pair of pixels to belong to the same neuron segment. 
 
-\TODO{Recap of what we do}
+\TODO{Downscaled res}
+\TODO{Appendix: Crops in the decoder part, structure of the residual block, }
 
 \subsection{Data: CREMI challenge} \label{sec:cremi_challenge}
 We evaluate the proposed method on the competitive CREMI 2016 EM Segmentation Challenge \cite{cremiChallenge} that is currently the neuron segmentation challenge with the largest amount of training data available. The dataset comes from serial section EM of \emph{Drosophila} fruit-fly tissue and consists of 6 volumes of 1250x1250x125 voxels at resolution 4x4x40nm, three of which come with publicly available training ground truth. The results submitted to the leaderboard are evaluated using the CREMI score, which is given by the geometric mean of Variation of Information Score (VOI split + VOI merge \cite{arganda2015crowdsourcing}) and Adapted Rand-Score (Rand-Score), two popular metrics used to evaluate clusterings.\\
