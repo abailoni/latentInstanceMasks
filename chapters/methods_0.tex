@@ -57,9 +57,13 @@ This type of loss, as compared to L2 or binary cross-entropy losses, is more rob
 Note that, in this setup, no convolutional encoder is trained.
 \TODO{Add comment about patches on boundaries}
 
-\subsection{Multi-scale self-probability masks}\label{sec:multiscale_patches}
-\TODO{To be completed}
-As architecture for the main backbone model, we used a 3D U-Net \cite{ronneberger2015u, cciccek20163d}, which is one of the most common choices for applications to biological and medical images.
-As we show in Fig. \ref{fig:main_figure}, the model is trained to predict latent vectors $z_{\mathbf{x}}$ at different depth levels of the UNet-decoder path...
+\subsection{Predicting multi-scale anchor masks}\label{sec:multiscale_patches}
+As architecture for the main backbone model, we used a 3D U-Net \cite{ronneberger2015u,cciccek20163d}, which is one of the most common choices for applications to biological and medical images \TODO{Refs?}.  
+Previous related work both on neuron segmentation \cite{lee2017superhuman} and natural images \cite{liu2018affinity,Gao_2019_ICCV} showed that training the model to predict long-range affinities between distant pixels improves performances. In our case, a simple solution would then be to increase the size of the predicted patches and use larger anchor masks, similarly to \cite{hirsch2020patchperpix}. However, this would come with a higher cost of GPU memories and in neuron segmentation would translate in training the model on a smaller input raw volume, whose size is an important hyper-parameter in this type of application since the correct detection of mitochondria and other organelles strongly depends on how much surrounding 3D context is provided during training. \TODO{Results?}
+
+Thus, we follow the approach of \cite{Gao_2019_ICCV} and predict multiple anchor masks of the same window size $5\times 7 \times 7$ but at different resolutions, so that the lower the resolution the larger the size of the associated patch in the input image (\textbf{see Fig. ??}). 
+Note that the size of anchor masks in this work is kept fixed only for simplicity reasons.
+These multiple anchor masks at different resolutions are then achieved by adding several \textbf{anchor-mask branches} along the hierarchy of the decoder in the backbone U-Net model (\textbf{see Fig. ??}). In this way, by following related work on object detection and instance segmentation \cite{Gao_2019_ICCV,lin2017feature}, the encoded anchor masks at higher and lower resolutions can be effectively learned at different feature levels in the feature pyramid of the U-Net model.
+
 
 

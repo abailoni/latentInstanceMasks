@@ -20,4 +20,10 @@ In more detail, we randomly zero-out slices, decrease the contrast of slices, si
 that these kinds of augmentations can help to alleviate issues caused by EM-imaging artifacts.
 We use Adam optimizer to train the network. The model was trained on all the three samples with available ground truth labels.  
 
+\begin{itemize}
+\item In the supplementary material, we provide all the architecture details.
+\item In particular, we use 3D anchor masks of size $5\times 7 \times 7$ at three different anisotropic resolutions $(1,1,1)$, $(1,\frac{1}{4},\frac{1}{4})$ and $(1,\frac{1}{8},\frac{1}{8})$, where the first dimension is the one with lowest resolution in the dataset.
+\end{itemize}
+
+
 \subsubsection{Predicting glia neurons}
