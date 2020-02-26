@@ -39,41 +39,32 @@
 \end{algorithm}
 
 \section{Extracting affinities from \maskname masks}
-In this section we describe how to extract a sparse stencil of affinities from the \maskname masks predicted by our model, so that they can be used as edge weights of a pixel grid-graph. 
-% Finally, a graph partitioning algorithm yields object instances.
+In order to obtain an instance segmentation from the predictions of the model presented in Sec. \ref{sec:model}, we now compute instance-aware pixel-pair affinities for a given sparse $N$-neighborhood structure (see \TODO{Appendix} for details about the used structure) and use them as edge weights of a pixel grid-graph $\mathcal{G}(V,E)$, such that each node represents a pixel / voxel of the image. The graph is then partitioned to obtain object instances.
 
+\TODO{Section intro} Second contribution; two ways
+% In this section, we propose two ways to perform something similar and use the predicted per-pixel \maskname masks to define the edge weights of a grid-graph.
+
+
+
+\subsection{Efficient affinities for any sparse neighborhood}\label{sec:efficient_affs}
+If the model is trained only with the \emph{\sparseBr branch} shown in Fig. \ref{fig:main_figure}a, then the desired $N$-neighborhood structure defining the connectivity of the grid-graph has to be defined before training. 
+On the other hand, if the model is trained with the \emph{\encBr branch} of Fig. \ref{fig:main_figure}c, then the sparse neighborhood structure can be defined at prediction time, but the small \emph{\maskDec network} of Fig. \ref{fig:main_figure}c has to be applied to each pixel of the image in order to predict the desired affinity values, $N$ for each mask. 
+Alternatively, an alternative method that is much more efficient consists in predicting these affinities directly from the $Q$-dimensional latent space of the encoded masks, by stacking few additional convolutional layers that do not need to be jointly trained with the full model and only serve to convert the encoded latent space to the desired $N$ output feature maps.
+% ,  predict  from the previously trained latent space feature maps $Q\times H\times W$.
+In this way, the desired $N$-neighborhood structure can be defined at prediction time, but the resulting model is no more memory-consuming than one directly trained to predict only that specific neighborhood. 
+
+
+
+\subsection{Affinities with uncertainty from aggregated masks}\label{sec:aggr_affs}
+As an alternative to the efficient method proposed in Sec. \ref{sec:efficient_affs}, in this section we propose an algorithm that, without the need of any threshold parameter, aggregates predictions from overlapping \maskname masks and output edge weights with associated uncertainty.
+\begin{itemize}
+\item in the literature they often use IoU
+\item Every patch predicts $M\times N$ affinities between the central pixel and the neighboring ones. But can we do better?
+\item In this way we can arrive to accumulate more than \emph{insert-number-here} values
+\item Defining the graph: we have an edge between two nodes $(i, j)$ only if $j \in M\times N$ Given two pixels  
+\end{itemize}
 
 \cite{liu2016multi} \emph{The patch pair with the highest overlap score is selected where corresponding segment masks are merged. This process iterates until no existing patch pair has the overlap score higher than a given threshold. Different scales are treated independently and duplicates are handled via non-max suppression}
-
-\TODO{To be completed}
-% A lot of recently proposed instance-segmentation methods, predict pairwise affinity between pairs of pixels 
-By predicting a \maskname mask for each pixel, the pairwise affinity between two pixels is predicted 
-
-
-One common used method is to predict a set of sparse affinities for every pixel (see Fig. \ref{fig:comparing_masks_affs}c)... 
-These can then be see as edge weights of a grid-graph where each node represents a pixel of the image. And a graph clustering algorithm is then applied to output an instance segmentation.
-In this section, we propose to ways to perform something similar and use the predicted per-pixel \maskname masks to define the edge weights of a grid-graph.
-First, in Sec. \ref{sec:efficient_affs} we propose a simple way to efficiently extract a set of sparse affinities from the predicted encoded \maskname masks, without the need to decode them one by one. Then, in Sec. \ref{sec:prob_affs}...
-
-\subsection{Efficient computation of sparse affinities from encoded masks}\label{sec:efficient_affs}
-A commonly used instance segmentation method predicts, for each pixel, a small set of sparse short- and long-range affinities representing how likely it is for a pair of pixels to belong to the same object instance (see Fig. \ref{fig:comparing_masks_affs}c).
-
-
-
-As a second contribution, we propose two distinct ways of converting the predicted per-pixel \maskname masks into edge weights of a graph representing the image, so that each node corresponds to a pixel and a graph clustering algorithm is then used to output an instance segmentation.
-
-Here it would be nice to claim that hopefully the set of affinities we get out of this leads to more consistent neighborhood structures as compared to directly predicting each affinity as an output channel of the main model
-
-\subsection{Averaged }\label{sec:prob_affs}
-\begin{itemize}
-\item Every patch predicts $M\times N$ affinities between the central pixel and the neighboring ones. But can we do better?
-\item Defining the graph: we have an edge between two nodes $(i, j)$ only if $j \in M\times N$ Given two pixels  
-\item training patches makes the task more difficult (than just learning a boundary prediction)
-\end{itemize}
-- 
-
-
-The second proposed method yields a parameter-free algorithm achieving competitive performances, yada yada yada... 
 
 
 

@@ -33,6 +33,9 @@ In our experiments, we evaluate how the dimension $Q$ of the latent space impact
 The main backbone model is then trained to predict, for each pixel $\coord{u}$, the mean and the standard deviation of the encoded distribution $p_{\phi}(z_{\coord{u}}|\hat{\mathcal{M}}_{\coord{u}})$ predicted by the pre-trained encoder, where $\hat{\mathcal{M}}_{\coord{u}}$ is the ground truth \maskname mask associated to pixel $\coord{u}$. An L2 loss is used to pull the two encoded vectors close to each other's. 
 The reasoning behind this approach is to train the backbone model to predict the masks in a meaningful compressed latent space. 
 Nevertheless, as we will show in our experiments, this method was the least successful among the tested ones (\emph{similarly to the findings of \cite{hirsch2020patchperpix}}).}
+\item Here it would be nice to claim that hopefully the set of affinities we get out of this leads to more consistent neighborhood structures as compared to directly predicting each affinity as an output channel of the main model
+\item training patches makes the task more difficult (than just learning a boundary prediction)
+\item explain how to get signed weights
 \end{itemize}
 
 
