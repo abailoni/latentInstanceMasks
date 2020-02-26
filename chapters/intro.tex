@@ -13,18 +13,18 @@ On the other hand, proposal-free methods adopt a bottom-up approach by directly 
 Some recent successful proposal-free approaches \cite{januszewski2018high,meirovitch2016multi,liu2016multi} tackle instance segmentation by predicting, for a given patch of the input image, whether or not each pixel in the patch is part of the same instance associated to the central/anchor pixel. 
 These masks are then repeatedly predicted, in a sliding window style, across the entire image and 
 the final object-instances are obtained by aggregating predictions from overlapping masks.
-In the following, we will refer to these patch predictions as \emph{anchor masks}.
+In the following, we will refer to these patch predictions as \emph{\maskname masks}.
 
-In this work, we propose a novel proposal-free segmentation method that is also based on the prediction of anchor masks. However, our approach comes with the following four main advantages.
-Firstly, our model concurrently predicts all anchor masks, one for each pixel, by using a fully-convolutional approach and comes then with a much lower computational cost compared to previous patch-based methods iteratively predicting one instance at the time, one patch after the other \cite{januszewski2018high,meirovitch2016multi}.
-Secondly, our approach predicts anchor masks in a low dimensional latent representation, which allows great memory savings and let us apply our method to large volumetric images of neuron tissue \cite{arganda2015crowdsourcing}. 
-Thirdly, the proposed approach aggregates predictions from overlapping anchor masks without the need of any extra parameter or threshold;
+In this work, we propose a novel proposal-free segmentation method that is also based on the prediction of \maskname masks. However, our approach comes with the following four main advantages.
+Firstly, our model concurrently predicts all \maskname masks, one for each pixel, by using a fully-convolutional approach and comes then with a much lower computational cost compared to previous patch-based methods iteratively predicting one instance at the time, one mask after the other \cite{januszewski2018high,meirovitch2016multi}.
+Secondly, our approach predicts \maskname masks in a low dimensional latent representation, which allows great memory savings and let us apply the method to large volumetric images of neuron tissue \cite{arganda2015crowdsourcing}. 
+Thirdly, the proposed approach aggregates predictions from overlapping \maskname masks without the need of any extra parameter or threshold;
 and, finally, all final object-instances are obtained concurrently, as opposed to previous methods predicting them one-by-one with subsequent conflict resolution. 
 % by extracting a set of affinities that are then used as signed weights of a graph representing the image, so that each node corresponds to a pixel
 
 % Despite the recent successful application of patch-based methods, so far no study has been conducted to compare them with 
 
-We also carry out a systematic study to compare the proposed model with another really common proposal-free method that has been recently successfully applied both to natural \cite{liu2018affinity,Gao_2019_ICCV} and biological \cite{lee2017superhuman,wolf2018mutex,bailoni2019generalized} images and consists of a fully-convolutional model predicting, for each pixel, a small set of short- and long-range affinities, i.e. neighborhood relations representing how likely it is for a pair of pixels to belong to the same object instance (see part ? of Fig. \ref{fig:comparing_masks_affs}?). 
+We also carry out a systematic study to compare the proposed model with another really common proposal-free method that has been recently successfully applied both to natural \cite{liu2018affinity,Gao_2019_ICCV} and biological \cite{lee2017superhuman,wolf2018mutex,bailoni2019generalized} images. This alternative method is sketched in Fig. \ref{fig:main_figure}a and consists of a fully-convolutional network predicting, for each pixel, a small set of short- and long-range affinities, i.e. neighborhood relations representing how likely it is for a pair of pixels to belong to the same object instance. 
 \TODO{} Our comparison on neuron segmentation shows how... (equally efficient, results, etc...)
 
 
@@ -46,7 +46,7 @@ We also carry out a systematic study to compare the proposed model with another 
 \centering
         % \includegraphics[width=0.4\textwidth,trim=0.25in 0.25in 0.68in 0.36in,clip]{./figs/SSBM_experiments.pdf} % 0.45
         \includegraphics[width=\textwidth]{./figs/main_image.pdf} % 0.45
-        \caption{Illustration of the proposed pipeline...}
+        \caption{A.) Predicting a sparse stencil of short- and long-range affinities. b) Predicting all patches (that it was actually the main proposal of PatchPerPix)...}
     \label{fig:main_figure}
 \end{figure}
 

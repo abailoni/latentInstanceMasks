@@ -21,8 +21,18 @@ that these kinds of augmentations can help to alleviate issues caused by EM-imag
 We use Adam optimizer to train the network. The model was trained on all the three samples with available ground truth labels.  
 
 \begin{itemize}
+\item we use a very strong baseline
 \item In the supplementary material, we provide all the architecture details.
 \item In particular, we use 3D anchor masks of size $5\times 7 \times 7$ at three different anisotropic resolutions $(1,1,1)$, $(1,\frac{1}{4},\frac{1}{4})$ and $(1,\frac{1}{8},\frac{1}{8})$, where the first dimension is the one with lowest resolution in the dataset.
+\item we predict two types of \maskname masks at the highest level of the hierarchy
+\item on blacked-out slices, we predict the one before
+\item Mention how we tested the latent space dimension by training a VAE (or AE) to compress binary ground-truth \maskname masks: \emph{We then test this assumption by compressing binary ground-truth \maskname masks $\hat{\mathcal{M}}_{\coord{u}}$ to latent variables $z_{\coord{u}}\in \mathbb{R}^Q$ by training a convolutional Variational Auto-encoder (VAE) \cite{kingma2013auto,rezende2014stochastic} consisting of an encoder $p_{\phi}(z_{\coord{u}}|\hat{\mathcal{M}}_{\coord{u}})$ and a decoder $p_{\phi}(\hat{\mathcal{M}}_{\coord{u}}|z_{\coord{u}})$.
+In our experiments, we evaluate how the dimension $Q$ of the latent space impacts the quality of the reconstructed binary masks and find in this way an optimal latent space dimension that is compact enough but at the same time preserves most of the information contained in the binary masks.}
+\item Mention that we also tried to pre-train the encoded space with a VAE, but this did not work better than directly training the space end-to-end (similarly to PatchPerPix). 
+\emph{In this case, we first train a VAE to encode ground-truth binary masks as explained above in Sec. \ref{sec:encoding_masks}. 
+The main backbone model is then trained to predict, for each pixel $\coord{u}$, the mean and the standard deviation of the encoded distribution $p_{\phi}(z_{\coord{u}}|\hat{\mathcal{M}}_{\coord{u}})$ predicted by the pre-trained encoder, where $\hat{\mathcal{M}}_{\coord{u}}$ is the ground truth \maskname mask associated to pixel $\coord{u}$. An L2 loss is used to pull the two encoded vectors close to each other's. 
+The reasoning behind this approach is to train the backbone model to predict the masks in a meaningful compressed latent space. 
+Nevertheless, as we will show in our experiments, this method was the least successful among the tested ones (\emph{similarly to the findings of \cite{hirsch2020patchperpix}}).}
 \end{itemize}
 
 

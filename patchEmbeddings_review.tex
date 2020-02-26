@@ -20,7 +20,11 @@
 \newcommand\TODO[1]{{\color{red}{TODO: #1}}}
 \newcommand\UPDATE[1]{{\color{blue}{#1}}}
 \newcommand\SOURCE[1]{{\color{green}{(from: #1)}}}
-\newcommand*{\patch}{probability mask~}
+\newcommand*{\maskname}{central instance~}
+\usepackage[e]{esvect}
+
+\newcommand\coord{\vec}
+
 
 \usepackage{bm}
 
@@ -47,7 +51,7 @@
 \mainmatter
 \def\ECCVSubNumber{100}  % Insert your submission number here
 
-\title{Encoded Per-Pixel Anchor-Masks for proposal-free volumetric instance segmentation} % Replace with your title
+\title{Affinities from local mask decoder for proposal-free volumetric instance segmentation} % Replace with your title
 
 % INITIAL SUBMISSION 
 %\begin{comment}

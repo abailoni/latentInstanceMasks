@@ -1,69 +1,66 @@
 % !TEX root = ../patchEmbeddings_review.tex
 
-\section{The model}\label{sec:model}
+\section{Model and training strategy}\label{sec:model}
+In this section, we first define \maskname masks and briefly review a common strategy to train affinities for a sparse neighborhood.
+Then, in Sec. \ref{sec:encoding_masks}, we present our first main contribution, i.e. a model trained end-to-end to predict encoded \maskname mask, one for each pixel of the input image. 
+% Finally, in Sec. \ref{sec:multiscale_patches}, we show how we predicted \maskname masks at different scales.
 
-In this section, we present the architecture of the proposed model. In Sec. \ref{sec:self_masks} and Sec. \ref{sec:encoding_masks} we define local self-probability masks and show how we compressed them to a lower latent space by using a Variational Auto-Encoder. Then, in Sec. \ref{sec:model_and_loss} we present the main convolutional model and the employed training loss. Finally, in Sec. \ref{sec:multiscale_patches} we show how we predicted self-probability masks at different scales.
-
-\subsection{Local self-probability masks}\label{sec:self_masks}
+\subsection{Local \maskname masks}\label{sec:self_masks}
 This work proposes to distinguish between different object instances based on instance-aware pixel-pair affinities, which specifies whether two pixels belong to the same instance or not.
-Given a pixel of the input image with coordinates $\mathbf{x}= (x_1, x_2)$, then a set of affinities to neighboring pixels within a $K\times K$ window is learned, where $K$ is an odd number. 
+Given a pixel of the input image with coordinates $\coord{u}= (u_x, u_y)$, then a set of affinities to neighboring pixels within a $K\times K$ window is learned, where $K$ is an odd number. 
 We define the $K\times K$-neighborhood of a pixel as:
 \begin{equation}
-\mathcal{N}_{K\times K} \equiv \mathcal{N}_{K} \times \mathcal{N}_{K}, \qquad \text{where} \quad \mathcal{N}_{K} \equiv \left\{-\frac{K-1}{2}, \ldots, \frac{K-1}{2}\right\}.
+\mathcal{N}_{K\times K} \equiv \mathcal{N}_{K} \times \mathcal{N}_{K}, \qquad \text{where} \quad \mathcal{N}_{K} \equiv \left\{-\frac{K-1}{2}, \ldots, \frac{K-1}{2}\right\}
 \end{equation}
- We then represent the affinities associated to pixel $\mathbf{x}$ as a local instance-aware self-probability mask, i.e. functions $\mathcal{M}_{\mathbf{x}}: \mathcal{N}_{K\times K} \rightarrow [0,1]$ describing the probability for each neighboring pixel to be in the same instance of pixel $\mathbf{x}$.
+and represent the affinities associated to pixel $\coord{u}$ as a \maskname mask, i.e. a function $\mathcal{M}_{\coord{u}}: \mathcal{N}_{K\times K} \rightarrow [0,1]$ describing the probability for each neighboring pixel in the patch to be in the same instance associated to the central pixel $\coord{u}$.
 
-In total, if the input image has $H\times W$ pixels, we predict $K^2 \times H \times W$ affinities. We represent the training targets for these affinities as binary ground-truth masks $\hat{\mathcal{M}}_{\mathbf{x}}: \mathcal{N}_{K\times K} \rightarrow \{0,1\}$, which can be derived from a ground-truth instance label image $\hat{L}: H\times W \rightarrow \mathbb{N}$ according to:
-\begin{equation}
-\forall\, \mathbf{x}\in H\times W, \quad \forall\, \mathbf{n}\in \mathcal{N}_{K\times K} \qquad \hat{\mathcal{M}}_{\mathbf{x}}(\mathbf{n}) = 
+% In total, if the input image has $H\times W$ pixels, we predict $K^2 \times H \times W$ affinities. 
+We represent the associated training targets as binary ground-truth masks $\hat{\mathcal{M}}_{\coord{u}}: \mathcal{N}_{K\times K} \rightarrow \{0,1\}$, which can be derived from a ground-truth instance label image $\hat{L}: H\times W \rightarrow \mathbb{N}$ according to:
+\begin{equation}\label{eq:target_masks}
+\forall\, \coord{u}\in H\times W, \quad \forall\, \coord{n}\in \mathcal{N}_{K\times K} \qquad \hat{\mathcal{M}}_{\coord{u}}(\coord{n}) = 
 \begin{cases}
-1, \quad &\text{if } \hat{L}(\mathbf{x}) = \hat{L}(\mathbf{x}+\mathbf{n}) \\
-0, \quad & \text{otherwise}. 
+1, \quad &\text{if } \hat{L}(\coord{u}) = \hat{L}(\coord{u}+\coord{n}) \\
+0, \quad & \text{otherwise},
 \end{cases}
 \end{equation}
-Note that these definitions can be easily generalized to 3D images.
+where $H\times W$ is the size of the input image. Note that these definitions can be easily generalized to the 3D case.
 
-\subsection{Encoding self-probability ground-truth masks}\label{sec:encoding_masks}
-We first note that, among all feasible binary masks $\hat{\mathcal{M}}_{\mathbf{x}}: \mathcal{N}_{K\times K} \rightarrow \{0,1\}$, in practice only a part of them represent real occurring neighborhood structures. 
+\subsection{Training affinities for a given sparse neighborhood}\label{sec:affs_from_sparse}
+In this section, we briefly overview a recent training method that has been widely used in instance segmentation \cite{liu2018affinity,Gao_2019_ICCV,lee2017superhuman,wolf2018mutex,bailoni2019generalized} and we also use to train our model (see \emph{sparse-neighborhood branch} in Fig. \ref{fig:main_figure}a).
+
+In this training setup, affinities between pairs of pixels are predicted for a predefined sparse stencil representing a set of $N$ short- and long-range neighborhood relations for each pixel ($N=8$ in Fig. \ref{fig:main_figure}a). In other words, we do not predict one full \maskname mask for each pixel of the input image, but only $N$ pixels of each \maskname mask. 
+As shown in the \emph{sparse-neighborhood branch} of Fig. \ref{fig:main_figure}a, the backbone model is trained to output $N$ feature maps, each representing a different neighborhood relation. We then define a dense channel-wise loss for every pixel according to the S\o rensen-Dice coefficient \cite{dice1945measures,sorensen1948method} (see \cite{wolf2018mutex} for details).
+As compared to L2 or binary cross-entropy, this loss is more robust against prediction and / or target sparsity, a desirable quality for our application in neuron segmentation, since neuron membranes occupy very few pixels in three-dimensional volume.
+
+\subsection{Training encoded \maskname masks end-to-end}\label{sec:encoding_masks}
+The training method presented above in Sec. \ref{sec:affs_from_sparse} can be easily modified to output a feature map of size $K^2 \times H \times W$ and predict then a full $K\times K$ \maskname mask for each pixel of the input image (see \emph{mask-per-pixel branch} in Fig. \ref{fig:main_figure}b).
+However, this model would come with a high GPU-memory cost and would not scale for large values of $K$, especially for applications on 3D images.
+
+We then note that, among all feasible binary masks $\hat{\mathcal{M}}_{\coord{u}}: \mathcal{N}_{K\times K} \rightarrow \{0,1\}$, in practice only a part of them represent real occurring neighborhood structures \TODO{Fig?}. 
 This suggests that it is possible to compress the masks to a lower dimensional space. 
 
-In order to test this assumption, we then compress binary ground-truth masks $\hat{\mathcal{M}}_{\mathbf{x}}$ to latent variables $z_{\mathbf{x}}\in \mathbb{R}^Q$ by training a convolutional Variational Auto-encoder (VAE) \cite{kingma2013auto,rezende2014stochastic} consisting of an encoder $p_{\phi}(z_{\mathbf{x}}|\hat{\mathcal{M}}_{\mathbf{x}})$ and a decoder $p_{\phi}(\hat{\mathcal{M}}_{\mathbf{x}}|z_{\mathbf{x}})$.
-In our experiments, we evaluate how the dimension $Q$ of the latent space impacts the quality of the reconstructed binary masks and find in this way an optimal latent space dimension that is compact enough but at the same time preserves most of the information contained in the binary masks.
+As our first main contribution, we then test this assumption by training a model end-to-end to predict, for each pixel $\coord{u}\in H\times W$ of the input image, a latent vector $z_{\coord{u}}\in \mathbb{R}^Q$ encoding the $K \times K$ \maskname mask $\mathcal{M}_{\coord{u}}$ centered at pixel $\coord{u}$ (see Fig. \ref{fig:main_figure}c). 
+In more details, the backbone model is trained to output a much more compact $Q\times H\times W$ feature map. 
+% as compared to $K^2 \times H \times W$. 
+Then, a tiny convolutional decoder network is applied to each single pixel of the feature map to obtain \maskname masks (see \emph{mask-per-pixel-decoder} in Fig. \ref{fig:main_figure}c).
 
-\subsection{Predicting encoded self-probability masks} \label{sec:model_and_loss}
-Given an input image, the model proposed in this work is trained to predict, for each pixel with coordinate $\mathbf{x}$, one latent vector $z_{\mathbf{x}}\in \mathbb{R}^Q$ encoding the associated self-probability mask $\mathcal{M}_{\mathbf{x}}$. Thus, if the input image has shape $H\times W$, the fully convolutional model outputs a feature map with shape $Q\times H\times W$. 
-Note that this yields a much more compact model as compared to directly predicting all $K\times K$-masks with a final output feature map of size $K^2\times H\times W$.
-
-Similarly to concurrent recent work \cite{hirsch2020patchperpix}, we test two ways of training the proposed model. \\
-
-\textbf{Training VAE and backbone model separately} -- In this case, we first train a VAE to encode ground-truth binary masks as explained above in Sec. \ref{sec:encoding_masks}. 
-The main backbone model is then trained to predict, for each pixel $\mathbf{x}$, the mean and the standard deviation of the encoded distribution $p_{\phi}(z_{\mathbf{x}}|\hat{\mathcal{M}}_{\mathbf{x}})$ predicted by the pre-trained encoder, where $\hat{\mathcal{M}}_{\mathbf{x}}$ is the ground truth self-probability mask associated to pixel $\mathbf{x}$. An L2 loss is used to pull the two encoded vectors close to each other's. 
-The reasoning behind this approach is to train the backbone model to predict the masks in a meaningful compressed latent space. 
-Nevertheless, as we will show in our experiments, this method was the least successful among the tested ones (\emph{similarly to the findings of \cite{hirsch2020patchperpix}}).\\
-% L2 loss between the predicted latent vector of the model $\tilde{z}_i$ and the encoded version of the associated ground truth binary mask $p_{\phi}()$
-% \begin{equation}
-% \mathcal{J}^A_{\mathrm{Loss}} = \sum_{i\in H\times W} ()^2
-% \end{equation}
-
-
-\textbf{Training encoded self-probability masks end-to-end} --
-In this second setup, the backbone model is trained end-to-end to predict a low-dimensional representation of the masks by applying a binary classification loss directly on decoded patches (see pipeline shown in Fig. \ref{fig:main_figure}). 
-More specifically, we randomly sample $R$ pixels with coordinates $\mathbf{x}_1, \ldots, \mathbf{x}_R$ and their associated encoded masks $z_{\mathbf{x}_1}, \ldots, z_{\mathbf{x}_R}$ from the output of the backbone-model and retrieve the associated masks $\mathcal{M}_{\mathbf{x}_1}, \ldots, \mathcal{M}_{\mathbf{x}_R}$ by applying a convolutional decoder to each of them. 
-The training loss is defined according to the S\o rensen-Dice coefficient \cite{dice1945measures,sorensen1948method} formulated for fuzzy set membership values:
+During training, decoding all predicted encoded masks $z_{\coord{u}}$ for all pixels in the image would be too memory consuming. Thus, we randomly sample $R$ pixels with coordinates $\coord{u}_1, \ldots, \coord{u}_R$ and only decode the associated masks $\mathcal{M}_{\coord{u}_1}, \ldots, \mathcal{M}_{\coord{u}_R}$. 
+Given the ground-truth \maskname masks $\hat{\mathcal{M}}_{\coord{u}_i}$ defined in Eq. \ref{eq:target_masks}, the training loss is then defined according to the S\o rensen-Dice coefficient formulated for fuzzy set membership values:
 \begin{equation}
-\mathcal{J}_{\mathrm{loss}} = \frac{\sum_{i=1}^R \sum_{\mathbf{n} \in \mathcal{N}_{K\times K}} \big(1-\mathcal{M}_{\mathbf{x}_i}(\mathbf{n})\big)\cdot \big(1-\hat{\mathcal{M}}_{\mathbf{x}_i}(\mathbf{n})\big)}{\sum_{i=1}^R \sum_{\mathbf{n}\in \mathcal{N}_{K\times K}} \Big( \big(1-\mathcal{M}_{\mathbf{x}_i}(\mathbf{n})\big)^2 + \big(1-\hat{\mathcal{M}}_{\mathbf{x}_i}(\mathbf{n})\big)^2 \Big)}.
+\mathcal{J}_{\mathrm{mask-loss}} = \frac{\sum_{i=1}^R \sum_{\coord{n} \in \mathcal{N}_{K\times K}} \big(1-\mathcal{M}_{\coord{u}_i}(\coord{n})\big)\cdot \big(1-\hat{\mathcal{M}}_{\coord{u}_i}(\coord{n})\big)}{\sum_{i=1}^R \sum_{\coord{n}\in \mathcal{N}_{K\times K}} \Big( \big(1-\mathcal{M}_{\coord{u}_i}(\coord{n})\big)^2 + \big(1-\hat{\mathcal{M}}_{\coord{u}_i}(\coord{n})\big)^2 \Big)}.
 \end{equation} 
-This type of loss, as compared to L2 or binary cross-entropy losses, is more robust against class imbalance and delivered better results for our applications.
-Note that, in this setup, no convolutional encoder is trained.
-\TODO{Add comment about patches on boundaries}
+Ground-truth labels are not always pixel-precise and it is often impossible to estimate the correct label for pixels that are really close to a ground-truth label transition. Thus, in order to avoid noise during training, we predict completely empty masks for pixels that are less than two pixels away from a label transition. 
 
-\subsection{Predicting multi-scale anchor masks}\label{sec:multiscale_patches}
-As architecture for the main backbone model, we used a 3D U-Net \cite{ronneberger2015u,cciccek20163d}, which is one of the most common choices for applications to biological and medical images \TODO{Refs?}.  
-Previous related work both on neuron segmentation \cite{lee2017superhuman} and natural images \cite{liu2018affinity,Gao_2019_ICCV} showed that training the model to predict long-range affinities between distant pixels improves performances. In our case, a simple solution would then be to increase the size of the predicted patches and use larger anchor masks, similarly to \cite{hirsch2020patchperpix}. However, this would come with a higher cost of GPU memories and in neuron segmentation would translate in training the model on a smaller input raw volume, whose size is an important hyper-parameter in this type of application since the correct detection of mitochondria and other organelles strongly depends on how much surrounding 3D context is provided during training. \TODO{Results?}
 
-Thus, we follow the approach of \cite{Gao_2019_ICCV} and predict multiple anchor masks of the same window size $5\times 7 \times 7$ but at different resolutions, so that the lower the resolution the larger the size of the associated patch in the input image (\textbf{see Fig. ??}). 
-Note that the size of anchor masks in this work is kept fixed only for simplicity reasons.
-These multiple anchor masks at different resolutions are then achieved by adding several \textbf{anchor-mask branches} along the hierarchy of the decoder in the backbone U-Net model (\textbf{see Fig. ??}). In this way, by following related work on object detection and instance segmentation \cite{Gao_2019_ICCV,lin2017feature}, the encoded anchor masks at higher and lower resolutions can be effectively learned at different feature levels in the feature pyramid of the U-Net model.
+\subsection{Predicting multi-scale \maskname masks}\label{sec:multiscale_patches}
+Previous related work both on neuron segmentation \cite{lee2017superhuman} and natural images \cite{liu2018affinity,Gao_2019_ICCV} shows that using the training strategy presented in Sec. \ref{sec:affs_from_sparse} to predict long-range affinities between distant pixels improves performances as compared to predicting only short-range ones. However, in the new training strategy proposed in Sec. \ref{sec:encoding_masks}, predicting large \maskname masks would translate in a bigger model that, on 3D data, would have to be trained on a smaller 3D input.
+This, in practice, usually decreases performances because of the reduced surrounding 3D context provided during training, which is an important hyper-parameter in neuron segmentation.
+% whose size is an important hyper-parameter in neuron segmentation since the correct detection of mitochondria and other organelles strongly depends on how much surrounding 3D context is provided during training.
+
+Thus, we instead follow the approach of \cite{Gao_2019_ICCV} and predict multiple \maskname masks of the same window size $5\times 7 \times 7$ but at different resolutions, so that the lower the resolution the larger the size of the associated patch in the input image  (\TODO{fig}). 
+% Note that the size of \maskname masks in this work is kept fixed only for simplicity reasons.
+These multiple masks at different resolutions are predicted by adding several mask-decoder branches along the hierarchy of the decoder in the backbone model, which in our case is a 3D U-Net \cite{ronneberger2015u,cciccek20163d}. 
+In this way, the encoded \maskname masks at higher and lower resolutions can be effectively learned at different feature levels in the feature pyramid of the U-Net, as it was already shown in previous work on object detection and instance segmentation \cite{Gao_2019_ICCV,lin2017feature}.
 
 
 
