@@ -33,7 +33,7 @@
       \State
       \Return $a_e, \sigma^2_e$ for each $e\in E$
   \end{algorithmic}
-    \label{computing_affinities}
+    \label{alg:computing_affinities}
   \end{flushleft}
 
 \end{algorithm}
@@ -52,19 +52,29 @@ On the other hand, if the model is trained with the \emph{\encBr branch} of Fig.
 Alternatively, an alternative method that is much more efficient consists in predicting these affinities directly from the $Q$-dimensional latent space of the encoded masks, by stacking few additional convolutional layers that do not need to be jointly trained with the full model and only serve to convert the encoded latent space to the desired $N$ output feature maps.
 % ,  predict  from the previously trained latent space feature maps $Q\times H\times W$.
 In this way, the desired $N$-neighborhood structure can be defined at prediction time, but the resulting model is no more memory-consuming than one directly trained to predict only that specific neighborhood. 
+\TODO{Mods from pdf}
 
 
 
 \subsection{Affinities with uncertainty from aggregated masks}\label{sec:aggr_affs}
 As an alternative to the efficient method proposed in Sec. \ref{sec:efficient_affs}, in this section we propose an algorithm that, without the need of any threshold parameter, aggregates predictions from overlapping \maskname masks and output edge weights with associated uncertainty.
+
+Related work either threshold the predicted \maskname masks \cite{januszewski2018high,hirsch2020patchperpix,meirovitch2016multi} or compute Intersection over Union (IoU) scores for overlapping patches \cite{liu2016multi}. However, an advantage of predicting pixel-pair affinities / pseudo-probabilities as compared to IoU scores is that affinities can easily be translated into attractive and repulsive interactions in the grid-graph 
+% i.e. edge with either positive or negative weights, 
+and a parameter-free partitioning algorithm can be employed to yield instances.
+% Related work in \cite{liu2016multi} aggregate \maskname masks by computing Intersection over Union (IoU) scores for overlapping patches, however these scores cannot be translated into attractive and repulsive cues of the graph, so hierarchical agglomerative clusterings 
+
+Here, we propose a simple method to aggregate predictions from multiple patches (see Algorithm \ref{alg:computing_affinities} and Fig. \ref{fig:alg_explained}). Let us assume we want to compute the weight for an edge $e$ linking pixels $\coord{u}$ and $\coord{v}$. Then we consider all predicted \maskname masks covering both $\coord{u}$ and $\coord{v}$. For example, if $\coord{u}$ and $\coord{v}$ are direct neighbors and the predicted masks have shape $K\times K$, then there will be $K(K-1)$ predicted masks including both pixel $\coord{u}$ and $\coord{v}.$\footnote{Note that here we ignore possible boundary effects by considering two pixels close to the image border.} 
+For each considered mask $\mathcal{M}_{\coord{c}}$ centered at pixel $\coord{c}$, we consider three possible cases: i) both pixels are included in the $\coord{c}$ \maskname mask and by transitivity they should also be in the same instance and have high affinity and tendency to be in the same cluster
+In summary, if both of them (fuzzy AND operator $min()$) belong to the mask centered at $\coord{c}$, then there is evidence for them to belong to the same cluster (affinity $a_i$ close to one). 
+From mask $\mathcal{M}_{\coord{c}_i}$, something can be said about the pairwise affinity between $\coord{u}$ and $\coord{v}$ only when at least one of them belong to the $\coord{c}$-\maskname mask (fuzzy OR operator $max()$). If both of them are out of the mask (Fig. \ref{fig:alg_explained}c), then there is no evidence at all from this mask (reliability weight $\omega_i$ close to zero).
+
 \begin{itemize}
-\item in the literature they often use IoU
-\item Every patch predicts $M\times N$ affinities between the central pixel and the neighboring ones. But can we do better?
-\item In this way we can arrive to accumulate more than \emph{insert-number-here} values
-\item Defining the graph: we have an edge between two nodes $(i, j)$ only if $j \in M\times N$ Given two pixels  
+\item Implemented on GPU (and online algorithm for variance)
+\item variance interpreted as ``how consistent were the predictions of the masks for this particular edge weight''
+
 \end{itemize}
 
-\cite{liu2016multi} \emph{The patch pair with the highest overlap score is selected where corresponding segment masks are merged. This process iterates until no existing patch pair has the overlap score higher than a given threshold. Different scales are treated independently and duplicates are handled via non-max suppression}
 
 
 

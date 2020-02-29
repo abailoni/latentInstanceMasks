@@ -26,7 +26,7 @@ and, finally, all final object-instances are obtained concurrently, as opposed t
 
 In this work, we also carry out a systematic study to compare the proposed model with another really common proposal-free method that has been recently successfully applied both to natural and biological images \cite{liu2018affinity,Gao_2019_ICCV,lee2017superhuman,wolf2018mutex,bailoni2019generalized}, and consists of a fully-convolutional network predicting, for each pixel, a small set of short- and long-range affinities, i.e. neighborhood relations representing how likely it is for a pair of pixels to belong to the same object instance (see Fig. \ref{fig:main_figure}a). 
 
-\TODO{} Our comparison on neuron segmentation shows how... (equally efficient, results, etc...)
+\TODO{} Our comparison on neuron segmentation shows that... (equally efficient, results, etc...)
 
 
 % In this work, we focus on a proposal-free method, where a Convolutional Neural Network (CNN) is trained to predict, for every pixel $i$ in the image, a patch of fixed size representing a probability mask of the instance object to which pixel $i$ belongs. The mask predicted in each patch is centered at the corresponding pixel $i$ and represents then a dense local neighborhood structure of pixel $i$. Whenever the object instance associated to pixel $i$ is bigger than the size of the patch, only a partial probability mask of the object is predicted. 

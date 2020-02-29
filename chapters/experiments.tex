@@ -22,7 +22,7 @@ We use Adam optimizer to train the network. The model was trained on all the thr
 
 \begin{itemize}
 \item we use a very strong baseline
-\item In the supplementary material, we provide all the architecture details.
+\item In the supplementary material, we provide all the architecture details: crops in the decoder of the UNet
 \item In particular, we use 3D anchor masks of size $5\times 7 \times 7$ at three different anisotropic resolutions $(1,1,1)$, $(1,\frac{1}{4},\frac{1}{4})$ and $(1,\frac{1}{8},\frac{1}{8})$, where the first dimension is the one with lowest resolution in the dataset.
 \item we predict two types of \maskname masks at the highest level of the hierarchy
 \item on blacked-out slices, we predict the one before
@@ -36,6 +36,8 @@ Nevertheless, as we will show in our experiments, this method was the least succ
 \item Here it would be nice to claim that hopefully the set of affinities we get out of this leads to more consistent neighborhood structures as compared to directly predicting each affinity as an output channel of the main model
 \item training patches makes the task more difficult (than just learning a boundary prediction)
 \item explain how to get signed weights
+\item augmentation tricks: removed some of the defected/shifted slices from test and blacked them out
+\item which outputs do we use for the averaging stuff? Only the high-res ones
 \end{itemize}
 
 
