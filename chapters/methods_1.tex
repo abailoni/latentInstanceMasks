@@ -40,19 +40,17 @@
 
 \section{Extracting affinities from \maskname masks}
 In order to obtain an instance segmentation from the predictions of the model presented in Sec. \ref{sec:model}, we now compute instance-aware pixel-pair affinities for a given sparse $N$-neighborhood structure (see \TODO{Appendix} for details about the used structure) and use them as edge weights of a pixel grid-graph $\mathcal{G}(V,E)$, such that each node represents a pixel / voxel of the image. The graph is then partitioned to obtain object instances.
-
-\TODO{Section intro} Second contribution; two ways
+% \TODO{Section intro} Second contribution; two ways
 % In this section, we propose two ways to perform something similar and use the predicted per-pixel \maskname masks to define the edge weights of a grid-graph.
 
 
 
 \subsection{Efficient affinities for any sparse neighborhood}\label{sec:efficient_affs}
 If the model is trained only with the \emph{\sparseBr branch} shown in Fig. \ref{fig:main_figure}a, then the desired $N$-neighborhood structure defining the connectivity of the grid-graph has to be defined before training. 
-On the other hand, if the model is trained with the \emph{\encBr branch} of Fig. \ref{fig:main_figure}c, then the sparse neighborhood structure can be defined at prediction time, but the small \emph{\maskDec network} of Fig. \ref{fig:main_figure}c has to be applied to each pixel of the image in order to predict the desired affinity values, $N$ for each mask. 
-Alternatively, an alternative method that is much more efficient consists in predicting these affinities directly from the $Q$-dimensional latent space of the encoded masks, by stacking few additional convolutional layers that do not need to be jointly trained with the full model and only serve to convert the encoded latent space to the desired $N$ output feature maps.
+On the other hand, if the model is trained with the \emph{\encBr branch} of Fig. \ref{fig:main_figure}c, then the sparse connectivity structure of the graph can be defined at prediction time, but the \emph{\maskDec} network of Fig. \ref{fig:main_figure}c has to be applied to each pixel of the image in order to predict the desired affinity values, given by the value of $N$ in each mask. 
+Alternatively, another much more efficient method consists in predicting these affinities directly from the $Q$-dimensional latent space of the encoded masks, by stacking few additional convolutional layers that do not need to be jointly trained with the full model and only serve to convert the encoded latent space to the desired $N$ output feature maps.
 % ,  predict  from the previously trained latent space feature maps $Q\times H\times W$.
-In this way, the desired $N$-neighborhood structure can be defined at prediction time, but the resulting model is no more memory-consuming than one directly trained to predict only that specific neighborhood. 
-\TODO{Mods from pdf}
+In this way, the graph $N$-neighborhood structure can be defined at prediction time, but the resulting model is no more memory-consuming than one directly trained to predict only that specific neighborhood. 
 
 
 
