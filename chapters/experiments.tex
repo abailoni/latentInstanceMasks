@@ -1,28 +1,44 @@
 % !TEX root = ../patchEmbeddings_review.tex
 
 \section{Experiments on neuron segmentation}
-We first evaluate and compare our method on the task of neuron segmentation in electron microscopy (EM) image volumes. This application is of key interest in connectomics, a field of neuro-science with the goal of reconstructing neural wiring diagrams spanning complete central nervous systems. Currently, only proof-reading or manual tracing yields sufficient accuracy for correct circuit reconstruction \cite{schlegel2017learning}, thus further progress is required in automated reconstruction methods.
-
-EM segmentation is commonly performed by first predicting 
-boundary pixels \cite{beier2017multicut,ciresan2012deep} or undirected affinities \cite{wolf2018mutex,lee2017superhuman,funke2018large}, which represent how likely it is for a pair of pixels to belong to the same neuron segment. 
-
 \subsection{Data: CREMI challenge} \label{sec:cremi_challenge}
-We evaluate the proposed method on the competitive CREMI 2016 EM Segmentation Challenge \cite{cremiChallenge} that is currently the neuron segmentation challenge with the largest amount of training data available. The dataset comes from serial section EM of \emph{Drosophila} fruit-fly tissue and consists of 6 volumes of 1250x1250x125 voxels at resolution 4x4x40nm, three of which come with publicly available training ground truth. The results submitted to the leaderboard are evaluated using the CREMI score, which is given by the geometric mean of Variation of Information Score (VOI split + VOI merge \cite{arganda2015crowdsourcing}) and Adapted Rand-Score (Rand-Score), two popular metrics used to evaluate clusterings.\\
+We evaluate and compare our method on the task of neuron segmentation in electron microscopy (EM) image volumes. This application is of key interest in connectomics, a field of neuro-science with the goal of reconstructing neural wiring diagrams spanning complete central nervous systems. Currently, only proof-reading or manual tracing yields sufficient accuracy for correct circuit reconstruction \cite{schlegel2017learning}, thus further progress is required in automated reconstruction methods.
+
+As a dataset, we consider the competitive CREMI 2016 EM Segmentation Challenge \cite{cremiChallenge} that is currently the neuron segmentation challenge with the largest amount of training data available. The dataset comes from serial section EM of \emph{Drosophila} fruit-fly tissue and consists of 6 volumes of 1250x1250x125 voxels at resolution 4x4x40nm, three of which come with publicly available training ground truth. The results submitted to the leaderboard are evaluated using the CREMI score, which is given by the geometric mean of Variation of Information Score (VOI split + VOI merge) and Adapted Rand-Score (Rand-Score), two popular metrics used to evaluate clusterings \cite{arganda2015crowdsourcing}.\\
 
 The data from the CREMI challenge is highly anisotropic and contains artifacts like missing sections, staining precipitations and support film folds. 
 To alleviate difficulties stemming from misalignment, we use a version of the data that was elastically realigned by the challenge organizers with the method of \cite{saalfeld2012elastic}.
-We train a 3D U-Net \cite{ronneberger2015u, cciccek20163d} \UPDATE{using the same architecture as \cite{funke2018large} and predict long-and-short range affinities 
-as described in \cite{lee2017superhuman}}. In addition to the standard data augmentation techniques of random rotations, random flips and  elastic deformations, we simulate data artifacts.
-In more detail, we randomly zero-out slices, decrease the contrast of slices, simulate tears, introduce alignment jitter and paste artifacts extracted from the training data. Both \cite{funke2018large} and \cite{lee2017superhuman} have shown
-that these kinds of augmentations can help to alleviate issues caused by EM-imaging artifacts.
-We use Adam optimizer to train the network. The model was trained on all the three samples with available ground truth labels.  
+In addition to the standard data augmentation techniques of random rotations, random flips and  elastic deformations, we simulate data artifacts.
+In more detail, we randomly zero-out slices, introduce alignment jitter and paste artifacts extracted from the training data. Both \cite{funke2018large} and \cite{lee2017superhuman} have shown
+that these kinds of augmentations can help to alleviate issues caused by EM-imaging artifacts. For zero-out slices, the model is trained to predict the ground-truth labels of the previous slice.
+In our experiments, the best scores were achieved by downscaling the resolution of the EM data by a factor $(1,\frac{1}{2},\frac{1}{2})$, where we kept the anisotropic dimension fixed. This helped increasing the amount of 3D context provided as input to the model.
+We use the second half of CREMI sample C as validation set for our comparison experiments in Table \ref{tab:val_scores}. Then, we train a final model on all the three samples with available ground truth labels and submit its predictions to the leader-board shown in Table \ref{tab:test_results}. 
+On the test samples, we run predictions for overlapping volumes and then average the predicted affinities \TODO{Ref Constantin}. 
+
+
+\subsection{Compared models}
+\textbf{Backbone model} -- Similarly to \cite{lee2019learning,lee2017superhuman,wolf2018mutex}, we use a 3D U-Net \cite{ronneberger2015u,cciccek20163d} as a backbone model, which is based on 3D residual blocks, group normalization layers and sum of feature maps from skip-connections (see all details in \TODO{Fig./Appendix}). 
+Models are trained with Adam optimizer and batch-size equal to 1. The input volume has shape $(12,)$ in the downscaled resolution and, before to apply the loss, we crop the predictions to a shape $()$ to avoid border artifacts. 
+The final model trained on all available ground truth labels is trained with a slightly larger input volume of $()$. 
+ 
+\textbf{Baseline model (SNB)} -- 
+
+
+\textbf{Proposed model (ENB)} -- 
+
+\textbf{Combined model (SNB+ENB)} -- 
+
+\textbf{Glia-neuron classifier} -- 
+
+\subsection{Results and discussion}
+
+\textbf{Compared graph-partitioning methods} --
 
 \begin{itemize}
 \item we use a very strong baseline
 \item In the supplementary material, we provide all the architecture details: crops in the decoder of the UNet
 \item In particular, we use 3D anchor masks of size $5\times 7 \times 7$ at three different anisotropic resolutions $(1,1,1)$, $(1,\frac{1}{4},\frac{1}{4})$ and $(1,\frac{1}{8},\frac{1}{8})$, where the first dimension is the one with lowest resolution in the dataset.
 \item we predict two types of \maskname masks at the highest level of the hierarchy
-\item on blacked-out slices, we predict the one before
 \item Mention how we tested the latent space dimension by training a VAE (or AE) to compress binary ground-truth \maskname masks: \emph{We then test this assumption by compressing binary ground-truth \maskname masks $\hat{\mathcal{M}}_{\coord{u}}$ to latent variables $z_{\coord{u}}\in \mathbb{R}^Q$ by training a convolutional Variational Auto-encoder (VAE) \cite{kingma2013auto,rezende2014stochastic} consisting of an encoder $p_{\phi}(z_{\coord{u}}|\hat{\mathcal{M}}_{\coord{u}})$ and a decoder $p_{\phi}(\hat{\mathcal{M}}_{\coord{u}}|z_{\coord{u}})$.
 In our experiments, we evaluate how the dimension $Q$ of the latent space impacts the quality of the reconstructed binary masks and find in this way an optimal latent space dimension that is compact enough but at the same time preserves most of the information contained in the binary masks.}
 \item Mention that we also tried to pre-train the encoded space with a VAE, but this did not work better than directly training the space end-to-end (similarly to PatchPerPix). 
@@ -37,8 +53,10 @@ Nevertheless, as we will show in our experiments, this method was the least succ
 \item which outputs do we use for the averaging stuff? Only the high-res ones
 \item Downscaled res
 \item Crops in the decoder part, structure of the residual block
+\item Adam Optimizer, learning rate, GroupNorm, residual blocks
+\item Removing small segments
+\item UNet: 3 depth levels with downscaling factor 2, feature maps, etc...
 
 \end{itemize}
 
 
-\subsubsection{Predicting glia neurons}
