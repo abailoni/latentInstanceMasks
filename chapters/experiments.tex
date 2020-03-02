@@ -4,41 +4,162 @@
 \subsection{Data: CREMI challenge} \label{sec:cremi_challenge}
 We evaluate and compare our method on the task of neuron segmentation in electron microscopy (EM) image volumes. This application is of key interest in connectomics, a field of neuro-science with the goal of reconstructing neural wiring diagrams spanning complete central nervous systems. Currently, only proof-reading or manual tracing yields sufficient accuracy for correct circuit reconstruction \cite{schlegel2017learning}, thus further progress is required in automated reconstruction methods.
 
-As a dataset, we consider the competitive CREMI 2016 EM Segmentation Challenge \cite{cremiChallenge} that is currently the neuron segmentation challenge with the largest amount of training data available. The dataset comes from serial section EM of \emph{Drosophila} fruit-fly tissue and consists of 6 volumes of 1250x1250x125 voxels at resolution 4x4x40nm, three of which come with publicly available training ground truth. The results submitted to the leaderboard are evaluated using the CREMI score, which is given by the geometric mean of Variation of Information Score (VOI split + VOI merge) and Adapted Rand-Score (Rand-Score), two popular metrics used to evaluate clusterings \cite{arganda2015crowdsourcing}.\\
+We test our method on the competitive CREMI 2016 EM Segmentation Challenge \cite{cremiChallenge} that is currently the neuron segmentation challenge with the largest amount of training data available. The dataset comes from serial section EM of \emph{Drosophila} fruit-fly tissue and consists of 6 volumes of $1250\times 1250\times 125$ voxels at resolution $4\times 4\times 40$ nm$^3$, three of which come with publicly available training ground truth. 
+We achieved the best scores by downscaling the resolution of the EM data of a factor $(\frac{1}{2},\frac{1}{2},1)$, since this helped increasing the 3D context provided as input to the model.
+We use the second half of CREMI sample C as validation set for our comparison experiments in Table \ref{tab:val_results} and then we train a final model on all the three samples with available ground truth labels to submit results to the leader-board in Tab. \ref{tab:test_results}. 
+Results  are evaluated using the CREMI score, which is given by the geometric mean of Variation of Information Score (VOI split + VOI merge) and Adapted Rand-Score (Rand-Score), two popular metrics used to evaluate clusterings \cite{arganda2015crowdsourcing}.
 
-The data from the CREMI challenge is highly anisotropic and contains artifacts like missing sections, staining precipitations and support film folds. 
+\textbf{Data augmentation} -- The data from the CREMI challenge is highly \linebreak anisotropic and contains artifacts like missing sections, staining precipitations and support film folds. 
 To alleviate difficulties stemming from misalignment, we use a version of the data that was elastically realigned by the challenge organizers with the method of \cite{saalfeld2012elastic}.
 In addition to the standard data augmentation techniques of random rotations, random flips and  elastic deformations, we simulate data artifacts.
 In more detail, we randomly zero-out slices, introduce alignment jitter and paste artifacts extracted from the training data. Both \cite{funke2018large} and \cite{lee2017superhuman} have shown
 that these kinds of augmentations can help to alleviate issues caused by EM-imaging artifacts. For zero-out slices, the model is trained to predict the ground-truth labels of the previous slice.
-In our experiments, the best scores were achieved by downscaling the resolution of the EM data by a factor $(1,\frac{1}{2},\frac{1}{2})$, where we kept the anisotropic dimension fixed. This helped increasing the amount of 3D context provided as input to the model.
-We use the second half of CREMI sample C as validation set for our comparison experiments in Table \ref{tab:val_scores}. Then, we train a final model on all the three samples with available ground truth labels and submit its predictions to the leader-board shown in Table \ref{tab:test_results}. 
-On the test samples, we run predictions for overlapping volumes and then average the predicted affinities \TODO{Ref Constantin}. 
+On the test samples, we run predictions for overlapping volumes and then average them \TODO{Ref Constantin}.
+
+
+ 
+ 
 
 
 \subsection{Compared models}
-\textbf{Backbone model} -- Similarly to \cite{lee2019learning,lee2017superhuman,wolf2018mutex}, we use a 3D U-Net \cite{ronneberger2015u,cciccek20163d} as a backbone model, which is based on 3D residual blocks, group normalization layers and sum of feature maps from skip-connections (see all details in \TODO{Fig./Appendix}). 
-Models are trained with Adam optimizer and batch-size equal to 1. The input volume has shape $(12,)$ in the downscaled resolution and, before to apply the loss, we crop the predictions to a shape $()$ to avoid border artifacts. 
-The final model trained on all available ground truth labels is trained with a slightly larger input volume of $()$. 
+Similarly to \cite{lee2019learning,lee2017superhuman,wolf2018mutex}, as a backbone model we use a 3D U-Net consisting of a hierarchy of four feature maps with anisotropic downscaling factors $(\frac{1}{2},\frac{1}{2},1)$. 
+% U-Net with three levels in the feauter map hierarchy, involving downscaling factors $(1, \frac{1}{2},\frac{1}{2})$
+Models are trained with Adam optimizer and batch size equal to one. Before to apply the loss, we slightly crop the predictions to prevent training on borders where not enough surrounding context is provided. 
+See \TODO{Appendix} for all details about the used architecture. 
+
  
-\textbf{Baseline model (SNB)} -- 
+\textbf{Baseline model (SNB)} -- As a strong baseline, we train a model to predict affinities for a sparse neighborhood structure (Fig. \ref{fig:main_figure}a). We perform deep supervision by attaching three \emph{\sparseBr branches} (SNB) at different levels in the hierarchy of the UNet decoder and train the coarser feature maps to predict longer range affinities. Details about the used neighborhood structures can be find in \TODO{Appendix}.
+
+\textbf{Proposed model (ENB)} -- We then train a model to predict encoded \maskname masks (Fig. \ref{fig:main_figure}c). Similarly to the baseline model, we provide deep supervision by attaching four \emph{\encBr branches} (ENB) to the backbone U-Net. As explained in Sec. \ref{sec:multiscale_patches}, all branches predict 3D masks of shape $5 \times 7 \times 7$, but at different resolutions $(1,1,1)$, $(1,\frac{1}{4},\frac{1}{4})$ and $(1,\frac{1}{8},\frac{1}{8})$, as we show in \TODO{Fig. in Appendix}.
+
+\textbf{Combined model (SNB+ENB)} -- Finally, we also train a combined model to predict both \maskname masks and a sparse neighborhood of affinities, by using all the just described \emph{\encBr} and \emph{\sparseBr} branches.  
+
+\textbf{Graph-partitioning methods} -- From these three models, we compute affinities $a_e$ either with the efficient method of Sec. \ref{sec:efficient_affs} or the average aggregation introduced in Sec. \ref{sec:aggr_affs} (AffAggr). The graph neighborhood structure is given in \TODO{Appendix}. Affinities $a_e$ are then converted to positive and negative edge weights $w_e$ by applying the additive transformation $w_e=a_e-0.5$.
+We test four algorithms commonly used in neuron segmentation to partition the graph. The Mutex Watershed (MWS) \cite{wolf2018mutex} is an efficient algorithm to partitions graphs with both attractive and repulsive weights without the need of extra parameters. Recently, another parameter-free algorithm based on average agglomeration (GaspAverage) was proposed in \cite{bailoni2019generalized}. GaspAverage is more robust to noise as compared to Mutex Watershed \cite{bailoni2019generalized}, but it is considerably more computationally expensive on large graphs like the ones considered here (up to $10^8$ nodes/voxels and $10^9$ edges). Thus, in our comparison on the validation set, we also... 
+
+We randomly select 10 \% of the long-range connections in the grid-graph...
 
 
-\textbf{Proposed model (ENB)} -- 
-
-\textbf{Combined model (SNB+ENB)} -- 
-
-\textbf{Glia-neuron classifier} -- 
 
 \subsection{Results and discussion}
 
-\textbf{Compared graph-partitioning methods} --
+
+
+\begin{table}[t]
+\small
+\centering
+  % {\renewcommand{\arraystretch}{1.3}
+  % \resizebox{\textwidth}{!}{
+        \begin{tabular}[t]{l L{1em} L{10em}c c}
+         % Method & \makecell{CREMI-Score \\(lower is better)} \\ \midrule 
+\thead{Partitioning algorithm} & & \thead[l]{Type of model} & \thead{CREMI-Score \\(lower is better)} & \thead{VI-merge \\(lower is better)} \\ \toprule 
+% & & SNB & 1.144 & 0.875 \\ 
+& & SNB+ENB & \textbf{0.115} & 0.222 \\
+& & SNB & 0.119 & \textbf{0.219} \\
+GaspAverage  & & SNB+ENB+AffAggr &  0.156 & 0.277 \\
+& &ENB & 0.173 & 0.242 \\
+& &ENB+AffAggr & 0.188 & 0.281 \\ \midrule
+& &SNB+ENB & \textbf{0.130} & \textbf{0.234} \\
+WSDT+GaspAverage & & SNB & 0.147 & 0.258 \\
+&& ENB & 0.173 & 0.240 \\ \midrule
+& &SNB+ENB & \textbf{0.135} & \textbf{0.235} \\
+WSDT+MC & & SNB &  0.151 & 0.258 \\
+& & ENB & 0.178 & 0.240 \\ \midrule
+& & SNB+ENB+AffAggr & \textbf{0.155} & 0.278 \\
+& & ENB+AffAggr & 0.183 & \textbf{0.275} \\
+MutexWatershed & & ENB & 0.417 & 0.311 \\
+& & SNB+ENB &  0.531 & 0.449 \\
+% & & SNB+ENB & 0.539 & 0.376 \\
+& & SNB & 0.895 & 0.634 \\ 
+% Superpixels without long-range:
+% UNet+SNB+ENB & WSDT+GASP-Avg & 0.137 & 0.260 \\
+% UNet+SNB & WSDT+GASP-Avg & 0.188 & 0.333 \\
+% UNet+ENB & WSDT+GASP-Avg & 0.197 & 0.299 \\
+% Multicut without long range:
+% UNet+SNB+ENB & WSDT+MC & 0.127 & 0.245 \\
+% UNet+ENB & WSDT+MC & 0.156 & 0.248 \\
+% UNet+SNB & WSDT+MC & 0.183 & 0.317 \\
+% Superpixels ong AffAggr
+% UNet+SNB+ENB+AffAggr & WSDT+GASP-Avg-LR & 0.219 & 0.309 \\
+% UNet+SNB+ENB+AffAggr & WSDT+GASP-Avg & 0.229 & 0.316 \\
+% UNet+ENB+AffAggr & WSDT+GASP-Avg-LR & 0.243 & 0.316 \\
+% UNet+ENB+AffAggr & WSDT+GASP-Avg & 0.248 & 0.323 \\
+        \end{tabular}
+        % }
+        \vspace{1em}
+        \caption{Comparison experiments on our CREMI validation set} \label{tab:val_results}
+\end{table}
+
+% \begin{figure}[t]
+%         \centering
+% \begin{minipage}[t]{0.49\textwidth}
+%     \centering
+%     % \scriptsize
+%         \begin{tabular}[t]{l|c}
+%          Method & \makecell{CREMI-Score \\(lower is better)} \\ \midrule 
+% \textbf{} \textbf{Average}& \textbf{0.226}  \\
+%  Sum + Constraints \cite{levinkov2017comparative} & 0.282 \\
+%  Abs. Max. \cite{wolf2018mutex} & 0.322 \\
+%  Max. + Constraints & 0.324 \\
+%  Sum \cite{keuper2015efficient} & 0.334 \\
+%  Average + Constraints & 0.563 \\
+% THRESH & 1.521 \\ 
+%         \end{tabular}
+%     % \captionof{table}{CREMI-Scores achieved by different linkage criteria and thresholding. All methods use the affinity predictions from our CNN as input. Scores are averaged over the three CREMI training datasets.}
+%     \label{tab:results_cremi_train}
+% \end{minipage}\hfill
+\begin{table}[t]
+\centering
+\begin{minipage}[t]{0.65\textwidth}
+    \centering
+    % \scriptsize
+        \begin{tabular}[t]{l|c}
+        Method & \makecell{CREMI-Score \\(lower is better)}  \\ \midrule
+UNet + SNB + LMC \cite{bailoni2019generalized} &  0.221\\
+PNI CNN \cite{lee2017superhuman} & 0.228 \\
+UNet + SNB + GaspAverage \cite{bailoni2019generalized} & 0.241 \\
+MALA CNN + MC \cite{funke2018large} & 0.276 \\
+CRU-Net \cite{zeng2017deepem3d} & 0.566  \\
+LFC \cite{parag2017anisotropic} & 0.616  \\
+        \end{tabular}
+        \vspace*{0.99em}
+    \caption{Current leading entries  in the CREMI challenge leaderboard \cite{cremiChallenge} (March 2020)}
+    \label{tab:test_results}
+\end{minipage}
+\end{table}
+% % \begin{minipage}[t]{0.35\textwidth}
+% % \centering
+% %     \scriptsize
+% %     \vspace*{-1.5em}
+% % \begin{tabular}[t]{l|cc}
+% %         \multirow{2}{*}{Method}    & AP  & AP 50\% \\ 
+% %          & \multicolumn{2}{c}{(higher is better)} \\ \midrule
+% %            Panoptic-DeepLab \cite{cheng2019panopticdeeplab} & 34.6 & 57.3 \\
+% %            UPSNet \cite{xiong2019upsnet} $\dagger$ & 33.0 & 59.6 \\
+% %            SSAP \cite{Gao_2019_ICCV} & 32.7 & 51.8 \\
+% %            AdaptIS \cite{sofiiuk2019adaptis} & 32.5 & 52.5 \\
+% %            PANet \cite{liu2018path} $\dagger$ & 31.8 & 57.1 \\
+% %            \textbf{GMIS Model \cite{liu2018affinity} +  Average} & \textbf{28.3} & \textbf{47.0} \\ 
+% %            JOSECB \cite{neven2019instance} & 27.7 & 50.9 \\
+% %            \textbf{GMIS} \cite{liu2018affinity} & \textbf{27.3} & \textbf{45.6} \\
+% %            Mask R-CNN \cite{he2017mask} $\dagger$ & 26.2 & 49.9 \\
+% %            SGN \cite{liu2017sgn} & 25.0 & 44.9 \\
+% %            % DIN \cite{arnab2017pixelwise} & 20.0 & 38.8 \\
+% %            % DWT \cite{bai2017deep} & 19.4 & 35.3 \\
+% %            % InstanceCut \cite{kirillov2017instancecut} & 13.0 & 27.9 \\
+% %         \end{tabular}
+% %     % \caption{CityScapes \emph{test} set}
+% %     % \vspace*{0.6em}
+% %     \captionof{table}{Results on CityScapes test. Methods marked with~$\dagger$ are \emph{proposal-based}. Only methods that do not use external training data (such as MS COCO) are shown.}\label{tab:results_cityscapes}
+% %     \label{tab:results_cityscapes_test}
+% % \end{minipage}
+% \end{figure}
+
+
+
 
 \begin{itemize}
-\item we use a very strong baseline
-\item In the supplementary material, we provide all the architecture details: crops in the decoder of the UNet
-\item In particular, we use 3D anchor masks of size $5\times 7 \times 7$ at three different anisotropic resolutions $(1,1,1)$, $(1,\frac{1}{4},\frac{1}{4})$ and $(1,\frac{1}{8},\frac{1}{8})$, where the first dimension is the one with lowest resolution in the dataset.
-\item we predict two types of \maskname masks at the highest level of the hierarchy
+\item Glia-neuron classifier
 \item Mention how we tested the latent space dimension by training a VAE (or AE) to compress binary ground-truth \maskname masks: \emph{We then test this assumption by compressing binary ground-truth \maskname masks $\hat{\mathcal{M}}_{\coord{u}}$ to latent variables $z_{\coord{u}}\in \mathbb{R}^Q$ by training a convolutional Variational Auto-encoder (VAE) \cite{kingma2013auto,rezende2014stochastic} consisting of an encoder $p_{\phi}(z_{\coord{u}}|\hat{\mathcal{M}}_{\coord{u}})$ and a decoder $p_{\phi}(\hat{\mathcal{M}}_{\coord{u}}|z_{\coord{u}})$.
 In our experiments, we evaluate how the dimension $Q$ of the latent space impacts the quality of the reconstructed binary masks and find in this way an optimal latent space dimension that is compact enough but at the same time preserves most of the information contained in the binary masks.}
 \item Mention that we also tried to pre-train the encoded space with a VAE, but this did not work better than directly training the space end-to-end (similarly to PatchPerPix). 
@@ -49,13 +170,6 @@ Nevertheless, as we will show in our experiments, this method was the least succ
 \item Here it would be nice to claim that hopefully the set of affinities we get out of this leads to more consistent neighborhood structures as compared to directly predicting each affinity as an output channel of the main model
 \item training patches makes the task more difficult (than just learning a boundary prediction)
 \item explain how to get signed weights
-\item augmentation tricks: removed some of the defected/shifted slices from test and blacked them out
-\item which outputs do we use for the averaging stuff? Only the high-res ones
-\item Downscaled res
-\item Crops in the decoder part, structure of the residual block
-\item Adam Optimizer, learning rate, GroupNorm, residual blocks
-\item Removing small segments
-\item UNet: 3 depth levels with downscaling factor 2, feature maps, etc...
 
 \end{itemize}
 

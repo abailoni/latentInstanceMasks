@@ -32,10 +32,16 @@
 % \newcommand\coord{\vec}
 \newcommand\coord{\bm}
 
-
-
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{makecell}
 \usepackage{textcomp}
-
+\usepackage{booktabs}
+% \usepackage[labelformat=simple]{subcaption}
+\newcolumntype{M}[1]{>{\centering\arraybackslash}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}m{#1}} 
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}m{#1}} 
+\newcolumntype{?}{!{\vrule width 0.3em}}
 
 \usepackage{algorithm}% http://ctan.org/pkg/algorithm
 \PassOptionsToPackage{noend}{algpseudocode}% comment out if want end's to show
@@ -120,5 +126,8 @@ ABC Institute, Rupert-Karls-University Heidelberg, Heidelberg, Germany\\
 %
 \bibliographystyle{splncs04}
 \bibliography{patchEmbeddings}
+
+\newpage
+\input{chapters/supplementary.tex}
 
 \end{document}
