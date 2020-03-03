@@ -40,9 +40,9 @@ We then note that, among all feasible binary masks $\hat{\mathcal{M}}_{\coord{u}
 This suggests that it is possible to compress the masks to a lower dimensional space. 
 
 As our first main contribution, we then test this assumption by training a model end-to-end to predict, for each pixel $\coord{u}\in H\times W$ of the input image, a latent vector $z_{\coord{u}}\in \mathbb{R}^Q$ encoding the $K \times K$ \maskname mask $\mathcal{M}_{\coord{u}}$ centered at pixel $\coord{u}$ (see \emph{\encBr branch} in Fig. \ref{fig:main_figure}c). 
-The backbone model is first trained to output a more compact $Q\times H\times W$ feature map. 
+The backbone model is first trained to output a more compact $Q\times H\times W$ feature map and
 % as compared to $K^2 \times H \times W$. 
-Then, a tiny convolutional decoder network, named \emph{\maskDec} in Fig. \ref{fig:main_figure}c, is applied to each pixel of the feature map to decode masks.
+then a tiny convolutional decoder network is applied to each pixel of the feature map to decode masks.
 
 During training, decoding one mask for each pixel in the image would be too memory consuming. Thus, we randomly sample $R$ pixels with coordinates $\coord{u}_1, \ldots, \coord{u}_R$ and only decode the associated masks $\mathcal{M}_{\coord{u}_1}, \ldots, \mathcal{M}_{\coord{u}_R}$. 
 Given the ground-truth \maskname masks $\hat{\mathcal{M}}_{\coord{u}_i}$ defined in Eq. \ref{eq:target_masks}, the training loss is then defined according to the S\o rensen-Dice coefficient formulated for fuzzy set membership values:

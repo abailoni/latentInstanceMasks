@@ -4,7 +4,7 @@
 \centering
         % \includegraphics[width=0.4\textwidth,trim=0.25in 0.25in 0.68in 0.36in,clip]{./figs/SSBM_experiments.pdf} % 0.45
         \includegraphics[width=0.7\textwidth]{./figs/alg_explaned.jpg} % 0.45
-        \caption{Illustration of the proposed parameter-free method to convert \maskname masks to edge weights...}
+        \caption{\TODO{Update fig}  Illustration of the proposed parameter-free method to convert \maskname masks to edge weights...}
     \label{fig:alg_explained}
 \end{figure}
 \begin{algorithm}[t]
@@ -47,7 +47,7 @@ In order to obtain an instance segmentation from the predictions of the model pr
 
 \subsection{Efficient affinities for any sparse neighborhood}\label{sec:efficient_affs}
 If the model is trained only with the \emph{\sparseBr branch} shown in Fig. \ref{fig:main_figure}a, then the desired $N$-neighborhood structure defining the connectivity of the grid-graph has to be defined before training. 
-On the other hand, if the model is trained with the \emph{\encBr branch} of Fig. \ref{fig:main_figure}c, then the sparse connectivity structure of the graph can be defined at prediction time, but the \emph{\maskDec} network of Fig. \ref{fig:main_figure}c has to be applied to each pixel of the image in order to predict the desired affinity values, given by the value of $N$ in each mask. 
+On the other hand, if the model is trained with the \emph{\encBr branch} of Fig. \ref{fig:main_figure}c, then the sparse connectivity structure of the graph can be defined at prediction time, but the \maskDec in Fig. \ref{fig:main_figure}c has to be applied to each pixel of the image in order to predict the desired affinity values, given by the value of $N$ in each mask. 
 Alternatively, another much more efficient method consists in predicting these affinities directly from the $Q$-dimensional latent space of the encoded masks, by stacking few additional convolutional layers that do not need to be jointly trained with the full model and only serve to convert the encoded latent space to the desired $N$ output feature maps.
 % ,  predict  from the previously trained latent space feature maps $Q\times H\times W$.
 In this way, the graph $N$-neighborhood structure can be defined at prediction time, but the resulting model is no more memory-consuming than one directly trained to predict only that specific neighborhood. 
