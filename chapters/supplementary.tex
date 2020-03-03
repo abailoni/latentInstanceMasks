@@ -15,3 +15,5 @@ The final model trained on all available ground truth labels is trained with a s
 \item In the supplementary material, we provide all the architecture details: crops in the decoder of the UNet
 \item we predict two types of \maskname masks at the highest level of the hierarchy
 \end{itemize}
+
+\textbf{Glia classifier} -- As a final post-processing step, we merge neighboring instances that have been classified as \emph{glia segments} (putative astrocyte). This is a common procedure in neuron segmentation \TODO{CIT}\cite{lee2019learning}, since glia segments are substantially different from the other neurons and are usually considered separately in the final reconstructed diagram of neural circuit connectivity. Glia segments usually present a main body with a lot of very thin glial processes
