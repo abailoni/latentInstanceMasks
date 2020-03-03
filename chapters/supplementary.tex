@@ -1,0 +1,17 @@
+% !TEX root = ../patchEmbeddings_review.tex
+
+\section{Supplementary material}
+\begin{itemize}
+\item residual blocks with group normalization layers and skip-connections involving sum of feature maps from 
+\item The input volume has shape $272 \times 272\times12$ which is equivalent to a volume of $544\times 544\times 12$ voxels in the original resolution $4\times 4\times 40$ nm$^3$. Before to apply the loss, we crop the predictions to a shape $224\times 224\times 9$ in order to avoid border artifacts. 
+The final model trained on all available ground truth labels is trained with a slightly larger input volume of $288\times 288\times 14$ and we provide even more input to the cheaper glia-predictor-model: $352\times 352\times 15$ voxels. 
+\item Explicitly say what is the size of the coarsest predicted mask in the original res, which should be $112 \times 112 \times 5$ voxels at res...
+\item which outputs do we use for the averaging stuff? Only the high-res ones
+\item Downscaled res
+\item Crops in the decoder part, structure of the residual block
+\item Adam Optimizer, learning rate, GroupNorm, residual blocks
+\item Removing small segments
+\item UNet: 3 depth levels with downscaling factor 2, feature maps, etc...
+\item In the supplementary material, we provide all the architecture details: crops in the decoder of the UNet
+\item we predict two types of \maskname masks at the highest level of the hierarchy
+\end{itemize}
