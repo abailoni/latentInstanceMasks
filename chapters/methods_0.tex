@@ -36,7 +36,7 @@ As compared to L2 or binary cross-entropy, this loss is more robust against pred
 The training method presented above in Sec. \ref{sec:affs_from_sparse} can be easily modified to output a feature map of size $K^2 \times H \times W$ and predict then a full $K\times K$ \maskname mask for each pixel of the input image (see \emph{\denseBr branch} in Fig. \ref{fig:main_figure}b).
 However, this model would come with a high GPU-memory cost and would not scale for large values of $K$, especially for applications on 3D images.
 
-We then note that, among all feasible binary masks $\hat{\mathcal{M}}_{\coord{u}}: \mathcal{N}_{K\times K} \rightarrow \{0,1\}$, in practice only a part of them represent real occurring neighborhood structures \TODO{Fig}. 
+We then note that, among all feasible binary masks $\hat{\mathcal{M}}_{\coord{u}}: \mathcal{N}_{K\times K} \rightarrow \{0,1\}$, in practice only a part of them represent real occurring neighborhood structures. 
 This suggests that it is possible to compress the masks to a lower dimensional space. 
 
 As our first main contribution, we then test this assumption by training a model end-to-end to predict, for each pixel $\coord{u}\in H\times W$ of the input image, a latent vector $z_{\coord{u}}\in \mathbb{R}^Q$ encoding the $K \times K$ \maskname mask $\mathcal{M}_{\coord{u}}$ centered at pixel $\coord{u}$ (see \emph{\encBr branch} in Fig. \ref{fig:main_figure}c). 
@@ -57,7 +57,7 @@ Previous related work both on neuron segmentation \cite{lee2017superhuman} and n
 This, in practice, usually decreases performances because of the reduced surrounding 3D context provided during training, which is an important hyper-parameter in neuron segmentation.
 % whose size is an important hyper-parameter in neuron segmentation since the correct detection of mitochondria and other organelles strongly depends on how much surrounding 3D context is provided during training.
 
-Thus, we instead follow the approach of \cite{Gao_2019_ICCV} and predict multiple \maskname masks of the same window size $7 \times 7 \times 5$ but at different resolutions, so that the lower the resolution the larger the size of the associated patch in the input image  (\TODO{fig}). 
+Thus, we instead follow the approach of \cite{Gao_2019_ICCV} and predict multiple \maskname masks of the same window size $7 \times 7 \times 5$ but at different resolutions, so that the lower the resolution the larger the size of the associated patch in the input image. 
 % Note that the size of \maskname masks in this work is kept fixed only for simplicity reasons.
 These multiple masks at different resolutions are predicted by adding several \emph{\encBr branches} along the hierarchy of the decoder in the backbone model, which in our case is a 3D U-Net \cite{ronneberger2015u,cciccek20163d}. 
 In this way, the encoded \maskname masks at higher and lower resolutions can be effectively learned at different feature levels in the feature pyramid of the U-Net, as it was already shown in previous work on object detection and instance segmentation \cite{Gao_2019_ICCV,lin2017feature}.
