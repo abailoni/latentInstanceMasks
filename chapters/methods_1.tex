@@ -11,11 +11,11 @@
   % \small
       % \State Initial clustering: $\Pi=\{\{v_1\}, \ldots, \{v_{|V|}\}\}$
       % \State Initialize interactions between clusters with $ = w^+_e - w^-_e$
-      \For{each edge $e\in E$ in graph $\mathcal{G}$}
+      \For{each edge $e=(\coord{u}, \coord{v})\in E$ in graph $\mathcal{G}$}
         \State Get coordinates $\coord{u}=(u_x,u_y)$ and $\coord{v}=(v_x,v_y)$ of pixels linked by edge $e$
         \State Collect all $T$ masks $\mathcal{M}_{\coord{c}_1},\ldots,\mathcal{M}_{\coord{c}_T}$ including both pixel $\coord{u}$ and pixel $\coord{v}$
-        \State Init. vectors $[a_1,\ldots,a_T]$ and $[\evidW_1,\ldots,\evidW_T]$ for affinities and evidence weights
-        \For{each mask $\mathcal{M}_{\coord{c}_i}$}
+        \State Init. vectors $[a_1,\ldots,a_T] = [\evidW_1,\ldots,\evidW_T] = 0$ for affinities and evidence weights
+        \For{$i\in 1, \ldots,T$}
             \State Get relative coords. of $\coord{u}$ and $\coord{v}$ with respect to the central pixel $\coord{c}_i$
             \State $a_i \gets \min \big(\mathcal{M}_{\coord{c}_i}(\coord{u} - \coord{c}_i), \,\mathcal{M}_{\coord{c}_i}(\coord{v} - \coord{c}_i)\big)$ \Comment{Fuzzy-AND: both values active}
             \State $\evidW_i \gets \max \big(\mathcal{M}_{\coord{c}_i}(\coord{u} - \coord{c}_i), \,\mathcal{M}_{\coord{c}_i}(\coord{v} - \coord{c}_i)\big)$ \Comment{Fuzzy-OR: at least one value active}
@@ -24,7 +24,7 @@
         \State Get weighted affinity variance $\sigma^2_e = \sum_{i} \evidW_i (a_i-\bar{a}_e)^2\,/\,\sum_{i}\evidW_i$
       \EndFor
       \State
-      \Return $a_e, \sigma^2_e$ for each $e\in E$
+      \Return $\bar{a}_e, \sigma^2_e$ for each $e\in E$
   \end{algorithmic}
     \label{alg:computing_affinities}
   \end{flushleft}
