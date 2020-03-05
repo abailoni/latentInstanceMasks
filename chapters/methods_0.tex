@@ -36,7 +36,7 @@ As compared to L2 or binary cross-entropy, this loss is more robust against pred
 The training method presented in Sec. \ref{sec:affs_from_sparse} can be easily modified to output a feature map of size $K^2 \times H \times W$ and thus predict a full $K\times K$ \maskname mask for each pixel of the input image (see \emph{\denseBr branch} in Fig. \ref{fig:main_figure}b).
 However, this model has prohibitively large memory requirements for meaningful values of $K$, precluding applications to 3D data of interest case.
 
-We then note that, among the $2^K^2=2^{K\cdot K}$ conceivable binary masks $\hat{\mathcal{M}}_{\coord{u}}: \mathcal{N}_{K\times K} \rightarrow \{0,1\}$, in practice only a tiny fraction corresponds to meaningful instance masks. 
+We then note that, among the $2^{K\cdot K}$ conceivable binary masks $\hat{\mathcal{M}}_{\coord{u}}: \mathcal{N}_{K\times K} \rightarrow \{0,1\}$, in practice only a tiny fraction corresponds to meaningful instance masks. 
 This suggests that it is possible to find a compact representation that spans the manifold of expected instance shapes.
 
 As our first main contribution, we then test this assumption by training a model end-to-end to predict, for each pixel $\coord{u}\in H\times W$ of the input image, a latent vector $z_{\coord{u}}\in \mathbb{R}^Q$ encoding the $K \times K$ \maskname mask $\mathcal{M}_{\coord{u}}$ centered at pixel $\coord{u}$ (see \emph{\encBr branch} in Fig. \ref{fig:main_figure}c). 
