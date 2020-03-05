@@ -23,12 +23,12 @@ We represent the associated training targets as binary ground-truth masks $\hat{
 0, \quad & \text{otherwise},
 \end{cases}
 \end{equation}
-where $H\times W$ is the size of the input image. We actually use similar definitions in 3D, but use the 2D notation for simplicity.
+where $H\times W$ is the size of the input image. We actually use similar definitions in 3D, but use 2D notation here for simplicity.
 
 \subsection{Training Affinities for a Given Sparse Neighborhood}\label{sec:affs_from_sparse}
 In this section, we briefly review the strong baseline model used in our comparison experiments that has been widely used in instance segmentation \cite{liu2018affinity,Gao_2019_ICCV,lee2017superhuman,wolf2018mutex,bailoni2019generalized} (see \emph{\sparseBr branch} in Fig. \ref{fig:main_figure}a).
 
-In this training setup, affinities between pairs of pixels are predicted for a predefined sparse stencil representing a set of $N$ short- and long-range neighborhood relations for each pixel ($N=8$ in Fig. \ref{fig:main_figure}a). In other words, we do not predict one full \maskname mask for each pixel of the input image, but only $N$ pixels of each \maskname mask. 
+In this training setup, affinities between pairs of pixels are predicted for a predefined sparse stencil representing a set of $N$ short- and long-range neighborhood relations for each pixel ($N=8$ in Fig. \ref{fig:main_figure}a). In other words, we do not predict one full \maskname mask for each pixel of the input image, but only a predefined pattern of $N$ out of $K\times K$ pixels of each \maskname mask. 
 As shown in the \emph{\sparseBr branch} of Fig. \ref{fig:main_figure}a, the backbone model is trained to output $N$ feature maps, each representing a different neighborhood relation. We then define a dense channel-wise S\o rensen-Dice loss for every pixel \cite{wolf2018mutex,dice1945measures,sorensen1948method}.
 As compared to L2 or binary cross-entropy, this loss is more robust against prediction and / or target sparsity, a desirable quality for our application in neuron segmentation, since transitions between neuron instances occupy very few pixels in a three-dimensional volume.
 
@@ -47,7 +47,7 @@ then a tiny convolutional decoder network is applied to each pixel of the featur
 During training, decoding one mask for each pixel in the image would be too memory consuming. Thus, we randomly sample $R$ pixels with coordinates $\coord{u}_1, \ldots, \coord{u}_R$ and only decode the associated masks $\mathcal{M}_{\coord{u}_1}, \ldots, \mathcal{M}_{\coord{u}_R}$. 
 Given the ground-truth \maskname masks $\hat{\mathcal{M}}_{\coord{u}_i}$ defined in Eq. \ref{eq:target_masks}, the training loss is then defined according to the S\o rensen-Dice coefficient formulated for fuzzy set membership values:
 \begin{equation}
-\mathcal{J}_{\mathrm{mask-loss}} = \frac{\sum_{i=1}^R \sum_{\coord{n} \in \mathcal{N}_{K\times K}} \big(1-\mathcal{M}_{\coord{u}_i}(\coord{n})\big)\cdot \big(1-\hat{\mathcal{M}}_{\coord{u}_i}(\coord{n})\big)}{\sum_{i=1}^R \sum_{\coord{n}\in \mathcal{N}_{K\times K}} \Big( \big(1-\mathcal{M}_{\coord{u}_i}(\coord{n})\big)^2 + \big(1-\hat{\mathcal{M}}_{\coord{u}_i}(\coord{n})\big)^2 \Big)}.
+\mathcal{J}_{\mathrm{MaskLoss}} = - \frac{\sum_{i=1}^R \sum_{\coord{n} \in \mathcal{N}_{K\times K}} \big(1-\mathcal{M}_{\coord{u}_i}(\coord{n})\big)\cdot \big(1-\hat{\mathcal{M}}_{\coord{u}_i}(\coord{n})\big)}{\sum_{i=1}^R \sum_{\coord{n}\in \mathcal{N}_{K\times K}} \Big( \big(1-\mathcal{M}_{\coord{u}_i}(\coord{n})\big)^2 + \big(1-\hat{\mathcal{M}}_{\coord{u}_i}(\coord{n})\big)^2 \Big)}.
 \end{equation} 
 Ground-truth labels are not always pixel-precise and it is often impossible to estimate the correct label for pixels that are close to a ground-truth label transition. Thus, in order to avoid noise during training, we predict completely empty masks for pixels that are less than two pixels away from a label transition. 
 
