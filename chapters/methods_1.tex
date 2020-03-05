@@ -31,14 +31,14 @@
 
 \end{algorithm}
 
-\section{Extracting affinities from \maskname masks}
+\section{Extracting Affinities from \maskname Masks}
 In order to obtain an instance segmentation from the predictions of the model presented in Sec. \ref{sec:model}, we now compute instance-aware pixel-pair affinities for a given sparse $N$-neighborhood structure (see \TODO{supplementary material} for details about the used structure) and use them as edge weights of a pixel grid-graph $\mathcal{G}(V,E)$, such that each node represents a pixel / voxel of the image. The graph is then partitioned to obtain object instances.
 % \TODO{Section intro} Second contribution; two ways
 % In this section, we propose two ways to perform something similar and use the predicted per-pixel \maskname masks to define the edge weights of a grid-graph.
 
 
 
-\subsection{Efficient affinities for any sparse neighborhood}\label{sec:efficient_affs}
+\subsection{Efficient Affinities for any Sparse Neighborhood}\label{sec:efficient_affs}
 If the model is trained only with the \emph{\sparseBr branch} shown in Fig. \ref{fig:main_figure}a, then the desired $N$-neighborhood structure defining the connectivity of the grid-graph has to be defined before training. 
 On the other hand, if the model is trained with the \emph{\encBr branch} of Fig. \ref{fig:main_figure}c, then the sparse connectivity structure of the graph can be defined at prediction time, but the \maskDec in Fig. \ref{fig:main_figure}c has to be applied to each pixel of the image in order to predict the desired affinity values, given by the value of $N$ in each mask. 
 Alternatively, another much more efficient method consists in predicting these affinities directly from the $Q$-dimensional latent space of the encoded masks, by stacking a few additional convolutional layers that do not need to be jointly trained with the full model and only serve to convert the encoded latent space to the desired $N$ output feature maps.
@@ -47,15 +47,15 @@ In this way, the graph $N$-neighborhood structure can be defined at prediction t
 
 
 
-\subsection{Affinities with uncertainty from aggregated masks}\label{sec:aggr_affs}
+\subsection{Affinities with Uncertainty from Aggregated Masks}\label{sec:aggr_affs}
 As an alternative to the efficient method proposed in Sec. \ref{sec:efficient_affs}, in this section we propose an algorithm that, without the need of any threshold parameter, aggregates predictions from overlapping \maskname masks and outputs edge weights with associated uncertainty.
-Related work either threshold the predicted \maskname masks \cite{januszewski2018high,hirsch2020patchperpix,meirovitch2016multi} or compute Intersection over Union (IoU) scores for overlapping patches \cite{liu2016multi}. However, an advantage of predicting pixel-pair affinities / pseudo-probabilities as compared to IoU scores is that affinities can easily be translated into attractive and repulsive interactions in the grid-graph 
+Related work either thresholds the predicted \maskname masks \cite{januszewski2018high,hirsch2020patchperpix,meirovitch2016multi} or computes Intersection over Union (IoU) scores for overlapping patches \cite{liu2016multi}. However, an advantage of predicting pixel-pair affinities / pseudo-probabilities as compared to IoU scores is that affinities can easily be translated into attractive and repulsive interactions in the grid-graph 
 % i.e. edge with either positive or negative weights, 
 and a parameter-free partitioning algorithm can be employed to yield instances.
 % Related work in \cite{liu2016multi} aggregate \maskname masks by computing Intersection over Union (IoU) scores for overlapping patches, however these scores cannot be translated into attractive and repulsive cues of the graph, so hierarchical agglomerative clusterings 
 
 Here, we propose a simple method to aggregate predictions from multiple patches (see Algorithm \ref{alg:computing_affinities} and \TODO{Fig. \ref{fig:alg_explained} in supplementary material}). Let us assume we want to compute the weight for an edge $e$ linking pixels $\coord{u}$ and $\coord{v}$. Then, we consider all predicted \maskname masks including both $\coord{u}$ and $\coord{v}$. For example, if $\coord{u}$ and $\coord{v}$ are direct neighbors and the predicted masks have shape $K\times K$, then there will be $K(K-1)$ masks including both pixel $\coord{u}$ and $\coord{v}.$\footnote{Note that here we ignore possible boundary effects by considering two pixels close to the image border.} 
-However, not all these masks are informative: a mask $\mathcal{M}_{\coord{c}_i}$ centered at pixel $\coord{c}_i$ provides some evidence about the affinity between pixels $\coord{u}$ and $\coord{v}$ only if at least one of the two pixels belongs to the $\mathcal{M}_{\coord{c}_i}$ mask (fuzzy OR operator at line 8 in Alg. \ref{alg:computing_affinities}).
+However, not all these masks are informative: A mask $\mathcal{M}_{\coord{c}_i}$ centered at pixel $\coord{c}_i$ provides any evidence about the affinity between pixels $\coord{u}$ and $\coord{v}$ only if at least one of the two pixels belongs to the mask $\mathcal{M}_{\coord{c}_i}$ mask (fuzzy OR operator at line 8 in Alg. \ref{alg:computing_affinities}).
 If both pixels do not belong to it, then the evidence weight $\evidW_i$ goes to zero (\TODO{Fig. \ref{fig:alg_explained}c in supplementary material}).
 On the other hand, we distinguish two cases when there is evidence and at least one pixel belongs to the $\mathcal{M}_{\coord{c}_i}$ mask: i)
 both pixels belong to it (fuzzy AND operator at line 7 in Alg. \ref{alg:computing_affinities}), so by transitivity we conclude they should be in the same instance and their affinity $a_i$ should tend to one (\TODO{Fig. \ref{fig:alg_explained}a}); 

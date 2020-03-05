@@ -1,11 +1,11 @@
 % !TEX root = ../patchEmbeddings_review.tex
 
-\section{Model and training strategy}\label{sec:model}
+\section{Model and Training Strategy}\label{sec:model}
 In this section, we first define \maskname masks and briefly review a common strategy to train affinities for a sparse neighborhood.
-Then, in Sec. \ref{sec:encoding_masks}, we present our first main contribution, i.e. a model trained end-to-end to predict encoded \maskname masks, one for each pixel of the input image. 
+Then, in Sec. \ref{sec:encoding_masks}, we present our first main contribution, a model trained end-to-end to predict encoded \maskname masks, one for each pixel of the input image. 
 % Finally, in Sec. \ref{sec:multiscale_patches}, we show how we predicted \maskname masks at different scales.
 
-\subsection{Local \maskname masks}\label{sec:self_masks}
+\subsection{Local \maskname Masks}\label{sec:self_masks}
 This work proposes to distinguish between different object instances based on instance-aware pixel-pair affinities in the interval $[0,1]$, which specify whether or not two pixels belong to the same instance or not.
 Given a pixel of the input image with coordinates $\coord{u}= (u_x, u_y)$, a set of affinities to neighboring pixels within a $K\times K$ window is learned, where $K$ is an odd number. 
 We define the $K\times K$-neighborhood of a pixel as:
@@ -23,23 +23,23 @@ We represent the associated training targets as binary ground-truth masks $\hat{
 0, \quad & \text{otherwise},
 \end{cases}
 \end{equation}
-where $H\times W$ is the size of the input image. We actually use similar definitions in 3D, but use 2D notation for simplicity.
+where $H\times W$ is the size of the input image. We actually use similar definitions in 3D, but use the 2D notation for simplicity.
 
-\subsection{Training affinities for a given sparse neighborhood}\label{sec:affs_from_sparse}
+\subsection{Training Affinities for a Given Sparse Neighborhood}\label{sec:affs_from_sparse}
 In this section, we briefly review the strong baseline model used in our comparison experiments that has been widely used in instance segmentation \cite{liu2018affinity,Gao_2019_ICCV,lee2017superhuman,wolf2018mutex,bailoni2019generalized} (see \emph{\sparseBr branch} in Fig. \ref{fig:main_figure}a).
 
 In this training setup, affinities between pairs of pixels are predicted for a predefined sparse stencil representing a set of $N$ short- and long-range neighborhood relations for each pixel ($N=8$ in Fig. \ref{fig:main_figure}a). In other words, we do not predict one full \maskname mask for each pixel of the input image, but only $N$ pixels of each \maskname mask. 
 As shown in the \emph{\sparseBr branch} of Fig. \ref{fig:main_figure}a, the backbone model is trained to output $N$ feature maps, each representing a different neighborhood relation. We then define a dense channel-wise S\o rensen-Dice loss for every pixel \cite{wolf2018mutex,dice1945measures,sorensen1948method}.
-As compared to L2 or binary cross-entropy, this loss is more robust against prediction and / or target sparsity, a desirable quality for our application in neuron segmentation, since neuron membranes occupy very few pixels in a three-dimensional volume.
+As compared to L2 or binary cross-entropy, this loss is more robust against prediction and / or target sparsity, a desirable quality for our application in neuron segmentation, since transitions between neuron instances occupy very few pixels in a three-dimensional volume.
 
-\subsection{Training encoded \maskname masks end-to-end}\label{sec:encoding_masks}
+\subsection{Training Encoded \maskname Masks End-To-End}\label{sec:encoding_masks}
 The training method presented in Sec. \ref{sec:affs_from_sparse} can be easily modified to output a feature map of size $K^2 \times H \times W$ and thus predict a full $K\times K$ \maskname mask for each pixel of the input image (see \emph{\denseBr branch} in Fig. \ref{fig:main_figure}b).
 However, this model has prohibitively large memory requirements for meaningful values of $K$, precluding applications to 3D data of interest case.
 
-We then note that, among the $2^{K\cdot K}$ conceivable binary masks $\hat{\mathcal{M}}_{\coord{u}}: \mathcal{N}_{K\times K} \rightarrow \{0,1\}$, in practice only a tiny fraction corresponds to meaningful instance masks. 
+However, among the $2^{K\cdot K}$ conceivable binary masks $\hat{\mathcal{M}}_{\coord{u}}: \mathcal{N}_{K^2} \rightarrow \{0,1\}$, in practice only a tiny fraction corresponds to meaningful instance masks. 
 This suggests that it is possible to find a compact representation that spans the manifold of expected instance shapes.
 
-As our first main contribution, we then test this assumption by training a model end-to-end to predict, for each pixel $\coord{u}\in H\times W$ of the input image, a latent vector $z_{\coord{u}}\in \mathbb{R}^Q$ encoding the $K \times K$ \maskname mask $\mathcal{M}_{\coord{u}}$ centered at pixel $\coord{u}$ (see \emph{\encBr branch} in Fig. \ref{fig:main_figure}c). 
+As our first main contribution, we test this assumption by training a model end-to-end to predict, for each pixel $\coord{u}\in H\times W$ of the input image, a latent vector $z_{\coord{u}}\in \mathbb{R}^Q$ encoding the $K \times K$ \maskname mask $\mathcal{M}_{\coord{u}}$ centered at pixel $\coord{u}$ (see \emph{\encBr branch} in Fig. \ref{fig:main_figure}c). 
 The backbone model is first trained to output a more compact $Q\times H\times W$ feature map and
 % as compared to $K^2 \times H \times W$. 
 then a tiny convolutional decoder network is applied to each pixel of the feature map to decode masks.
@@ -52,7 +52,7 @@ Given the ground-truth \maskname masks $\hat{\mathcal{M}}_{\coord{u}_i}$ defined
 Ground-truth labels are not always pixel-precise and it is often impossible to estimate the correct label for pixels that are close to a ground-truth label transition. Thus, in order to avoid noise during training, we predict completely empty masks for pixels that are less than two pixels away from a label transition. 
 
 
-\subsection{Predicting multi-scale \maskname masks}\label{sec:multiscale_patches}
+\subsection{Predicting Multi-Scale \maskname Masks}\label{sec:multiscale_patches}
 Previous related work both on neuron segmentation \cite{lee2017superhuman} and natural images \cite{liu2018affinity,Gao_2019_ICCV} shows that, when using the training strategy presented in Sec. \ref{sec:affs_from_sparse}, predicting long-range affinities between distant pixels improves accuracy as compared to predicting only short-range ones. However, in the new training strategy proposed in Sec. \ref{sec:encoding_masks}, predicting large \maskname masks would translate to a bigger model that, on 3D data, would have to be trained on a small 3D input.
 This, in practice, usually decreases accuracy because of the reduced 3D context provided during training.
 % whose size is an important hyper-parameter in neuron segmentation since the correct detection of mitochondria and other organelles strongly depends on how much surrounding 3D context is provided during training.
