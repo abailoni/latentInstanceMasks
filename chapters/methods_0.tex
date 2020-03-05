@@ -2,17 +2,17 @@
 
 \section{Model and training strategy}\label{sec:model}
 In this section, we first define \maskname masks and briefly review a common strategy to train affinities for a sparse neighborhood.
-Then, in Sec. \ref{sec:encoding_masks}, we present our first main contribution, i.e. a model trained end-to-end to predict encoded \maskname mask, one for each pixel of the input image. 
+Then, in Sec. \ref{sec:encoding_masks}, we present our first main contribution, i.e. a model trained end-to-end to predict encoded \maskname masks, one for each pixel of the input image. 
 % Finally, in Sec. \ref{sec:multiscale_patches}, we show how we predicted \maskname masks at different scales.
 
 \subsection{Local \maskname masks}\label{sec:self_masks}
-This work proposes to distinguish between different object instances based on instance-aware pixel-pair affinities in the interval $[0,1]$, which specifies whether two pixels belong to the same instance or not.
-Given a pixel of the input image with coordinates $\coord{u}= (u_x, u_y)$, then a set of affinities to neighboring pixels within a $K\times K$ window is learned, where $K$ is an odd number. 
+This work proposes to distinguish between different object instances based on instance-aware pixel-pair affinities in the interval $[0,1]$, which specify whether or not two pixels belong to the same instance or not.
+Given a pixel of the input image with coordinates $\coord{u}= (u_x, u_y)$, a set of affinities to neighboring pixels within a $K\times K$ window is learned, where $K$ is an odd number. 
 We define the $K\times K$-neighborhood of a pixel as:
 \begin{equation}
 \mathcal{N}_{K\times K} \equiv \mathcal{N}_{K} \times \mathcal{N}_{K}, \qquad \text{where} \quad \mathcal{N}_{K} \equiv \left\{-\frac{K-1}{2}, \ldots, \frac{K-1}{2}\right\}
 \end{equation}
-and represent the affinities associated to pixel $\coord{u}$ as a \maskname mask, i.e. a function $\mathcal{M}_{\coord{u}}: \mathcal{N}_{K\times K} \rightarrow [0,1]$ describing the probability for each neighboring pixel in the patch to be in the same instance associated to the central pixel $\coord{u}$.
+and represent the affinities relative to pixel $\coord{u}$ as a \maskname mask, i.e. a function $\mathcal{M}_{\coord{u}}: \mathcal{N}_{K\times K} \rightarrow [0,1]$ describing the probability for each neighboring pixel in the patch to be in the same instance as central pixel $\coord{u}$.
 
 % In total, if the input image has $H\times W$ pixels, we predict $K^2 \times H \times W$ affinities. 
 We represent the associated training targets as binary ground-truth masks $\hat{\mathcal{M}}_{\coord{u}}: \mathcal{N}_{K\times K} \rightarrow \{0,1\}$, which can be derived from a ground-truth instance label image $\hat{L}: H\times W \rightarrow \mathbb{N}$ according to:
@@ -23,10 +23,10 @@ We represent the associated training targets as binary ground-truth masks $\hat{
 0, \quad & \text{otherwise},
 \end{cases}
 \end{equation}
-where $H\times W$ is the size of the input image. Note that these definitions can be easily generalized to the 3D case.
+where $H\times W$ is the size of the input image. We actually use similar definitions in 3D, but use 2D notation for simplicity.
 
 \subsection{Training affinities for a given sparse neighborhood}\label{sec:affs_from_sparse}
-In this section, we briefly overview a recent training method that has been widely used in instance segmentation \cite{liu2018affinity,Gao_2019_ICCV,lee2017superhuman,wolf2018mutex,bailoni2019generalized} and we also use to train our model (see \emph{\sparseBr branch} in Fig. \ref{fig:main_figure}a).
+In this section, we briefly review the strong baseline model used in our comparison experiments that has been widely used in instance segmentation \cite{liu2018affinity,Gao_2019_ICCV,lee2017superhuman,wolf2018mutex,bailoni2019generalized} (see \emph{\sparseBr branch} in Fig. \ref{fig:main_figure}a).
 
 In this training setup, affinities between pairs of pixels are predicted for a predefined sparse stencil representing a set of $N$ short- and long-range neighborhood relations for each pixel ($N=8$ in Fig. \ref{fig:main_figure}a). In other words, we do not predict one full \maskname mask for each pixel of the input image, but only $N$ pixels of each \maskname mask. 
 As shown in the \emph{\sparseBr branch} of Fig. \ref{fig:main_figure}a, the backbone model is trained to output $N$ feature maps, each representing a different neighborhood relation. We then define a dense channel-wise loss for every pixel according to the S\o rensen-Dice coefficient \cite{dice1945measures,sorensen1948method} (see \cite{wolf2018mutex} for details).

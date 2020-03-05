@@ -2,31 +2,32 @@
 
 \section{Introduction}\label{sec:intro}
 
-\emph{Instance segmentation} is a task of computer vision consisting in assigning each pixel of an image to an object instance. %, where the number of instances is usually not known in advance. 
+\emph{Instance segmentation} is the computer vision task of assigning each pixel of an image to an instance, such as individual car, person or biological cell. %, where the number of instances is usually not known in advance. 
 % The most success in instance segmentation (IS) has been achieved by applying deep learning. %\cite{he2017mask,romera2016recurrent,liu2018affinity}. 
-There are two main types of successful deep learning approaches to instance segmentation: proposal-based and proposal-free methods. 
-Proposal-based methods consist of two steps: object detection, for example by finding bounding boxes, and assigning pixels to the detected objects. These approaches have proven to be highly successful in instance segmentation competitions like MS COCO \cite{lin2014microsoft} and CityScapes \cite{cordts2016cityscapes}. 
-On the other hand, proposal-free methods adopt a bottom-up approach by directly grouping pixels into instances. Recently, there has been a growing interest for such methods that do not involve object detection, since, in certain types of images like the ones we focus on in this work, object instances cannot be approximated by bounding boxes and are usually larger than the field of view of the model.  
+There are two main types of successful deep learning approaches to instance segmentation: \emph{proposal-based} and \emph{proposal-free} methods. 
+Recently, there has been a growing interest in such methods that do not involve object detection, since, in certain types of images like the ones we focus on in this work, object instances cannot be approximated by bounding boxes and are usually larger than the field of view of the model.  
 
  
 % A graph partitioning algorithm is used to obtain object instances.
-Some recent successful proposal-free approaches \cite{januszewski2018high,meirovitch2016multi,liu2016multi} tackle instance segmentation by predicting, for a given patch of the input image, whether or not each pixel in the patch is part of the same instance associated to the central pixel of the patch. 
+Some recent successful proposal-free approaches \cite{januszewski2018high,meirovitch2016multi,liu2016multi} tackle instance segmentation by predicting, for a given patch of the input image, whether or not each pixel in the patch is part of the instance that covers the central pixel of the patch. 
 This results in many probability masks, which from now on we call \emph{\maskname masks}, that are then repeatedly predicted across the entire image, either in a sliding window style or by starting from a seed and then shifting the field of view depending on the previously predicted masks. 
-Final object-instances are then obtained by aggregating predictions from overlapping masks.
+Final object-instances are then obtained by aggregating predictions from overlapping masks, which is in itself a nontrivial and interesting problem.
 % In the following, we will refer to these patch predictions as \emph{\maskname masks}.
 
-In this work, we propose a novel proposal-free segmentation method that is also based on predicting \maskname masks. However, our approach comes with the following four main advantages compared to previous methods.
-Firstly, our model concurrently predicts all \maskname masks, one for each pixel, by using a fully-convolutional approach and comes then with a much lower computational cost compared to previous methods iteratively predicting one instance at the time, one mask after the other \cite{januszewski2018high,meirovitch2016multi}.
-Secondly, our approach predicts \maskname masks in a low dimensional latent representation (see Fig. \ref{fig:main_figure}b), which allows great memory savings and let us apply the method to large volumetric images of neuron tissue \cite{arganda2015crowdsourcing}. 
-Thirdly, the proposed approach aggregates predictions from overlapping \maskname masks without the need of any extra parameter or threshold;
+In this work, we introduce a new proposal-free segmentation method that is also based on predicting \maskname masks\footnote{For interesting, mostly related but independent work, see preprint \cite{hirsch2020patchperpix}.}. However, our approach comes with four main advantages compared to previous methods.
+Firstly, our model concurrently predicts all \maskname masks, one for each pixel, by using a fully-convolutional approach with much smaller computational footprint than previous methods iteratively predicting one instance at the time, one mask after the other \cite{januszewski2018high,meirovitch2016multi}.
+Secondly, our approach predicts \maskname masks in a low dimensional latent representation (see Fig. \ref{fig:main_figure}b), which results in great memory savings that are strictly required to apply the method to large volumetric images. 
+Thirdly, the proposed approach aggregates predictions from overlapping \maskname masks without the need for any extra parameter or threshold and outputs predictions with associated uncertainty;
 and, finally, all final object-instances are obtained concurrently, as opposed to previous methods predicting them one-by-one with subsequent conflict resolution. 
 % by extracting a set of affinities that are then used as signed weights of a graph representing the image, so that each node corresponds to a pixel
 
 % Despite the recent successful application of patch-based methods, so far no study has been conducted to compare them with 
 
-In this work, we also carry out a systematic study to compare the proposed model with another really common proposal-free method that has been recently successfully applied both to natural and biological images \cite{liu2018affinity,Gao_2019_ICCV,lee2017superhuman,wolf2018mutex,bailoni2019generalized}, and consists of a fully-convolutional network predicting, for each pixel, a small set of short- and long-range affinities, i.e. neighborhood relations representing how likely it is for a pair of pixels to belong to the same object instance (see Fig. \ref{fig:main_figure}a). 
+In this work, we also carry out a systematic study of validation experiments to compare the proposed model with the current state-of-the-art proposal-free method both on natural and biological images \cite{liu2018affinity,Gao_2019_ICCV,lee2017superhuman,wolf2018mutex,bailoni2019generalized}. This strong baseline / competitor consists of a fully-convolutional network predicting, for each pixel, a small set of short- and long-range affinities, i.e. neighborhood relations representing how likely it is for a pair of pixels to belong to the same object instance (see Fig. \ref{fig:main_figure}a). 
 
-\TODO{} Our comparison on neuron segmentation shows that... (equally efficient, results, etc...)
+Our method achieves competitive scores on the challenging CREMI 2016 segmentation benchmark on neuron segmentation. In our set of validation experiments, we show how predicting encoded \maskname masks always improves training performances. Moreover, when predictions from overlapping masks are combined into edge weights of a graph that is subsequently partitioned, this yields a noise-robust algorithm, which gives priority to predictions sharing the highest consensus across predicted masks. 
+This parameter-free algorithm, for the first time, performs better than other super-pixel based methods, which has always been the default choice on the challenging data from the CREMI competition challenge because of their robustness to noise.
+ % and achieves competitive performances on the CREMI leader-board.
 
 
 % In this work, we focus on a proposal-free method, where a Convolutional Neural Network (CNN) is trained to predict, for every pixel $i$ in the image, a patch of fixed size representing a probability mask of the instance object to which pixel $i$ belongs. The mask predicted in each patch is centered at the corresponding pixel $i$ and represents then a dense local neighborhood structure of pixel $i$. Whenever the object instance associated to pixel $i$ is bigger than the size of the patch, only a partial probability mask of the object is predicted. 

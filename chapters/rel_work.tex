@@ -1,7 +1,8 @@
 % !TEX root = ../patchEmbeddings_review.tex
 
 \section{Related work} \label{sec:related_work}
-\textbf{Proposal-based methods} -- Many of the recent successful instance segmentation methods on natural images are \emph{proposal based}: they first perform object detection, for example by predicting anchor boxes \cite{ren2015faster}, and then assign a class and a binary segmentation mask to each detected bounding box, either convolutionally \cite{he2017mask,porzi2019seamless,liu2018path,yang2012layered,li2017fully,ladicky2010and,hariharan2014simultaneous,chen2015multi,dai2016instance,liang2016reversible} or in a recurrent fashion by sequentially generating instances one-by-one \cite{romera2016recurrent,ren2017end}. 
+\textbf{Proposal-based methods} -- Many of the recent successful instance segmentation methods on natural images are \emph{proposal based}: they first perform object detection, for example by predicting anchor boxes \cite{ren2015faster}, and then assign a class and a binary segmentation mask to each detected bounding box, either convolutionally \cite{he2017mask,porzi2019seamless,liu2018path,yang2012layered,li2017fully,ladicky2010and,hariharan2014simultaneous,chen2015multi,dai2016instance,liang2016reversible} or in a recurrent fashion by sequentially generating instances one-by-one \cite{romera2016recurrent,ren2017end}. These approaches have proven highly successful in benchmarks like MS COCO \cite{lin2014microsoft} and CityScapes \cite{cordts2016cityscapes}. 
+
 % However, in this work we focus on 3D neuron segmentation for connectomics, which is a field of neuroscience where instances/neurons cannot be approximated by bounding boxes. \TODO{Remove?}
 
 \textbf{Proposal-free methods} on the other hand directly group pixels into instances. 
@@ -12,9 +13,9 @@ Other proposal-free methods predict the relative coordinates of the instance cen
 learn a watershed transform by predicting its gradient direction \cite{bai2017deep}. 
 
 \textbf{Aggregating \maskname masks} -- 
-The line of research closest to our predicts densely located \maskname masks in a sliding window style across the entire image. The work of \cite{liu2016multi} aggregates overlapping masks and compute intersection over union scores between them.
-In neuron segmentation, flood-filling networks \cite{januszewski2018high} and MaskExtend \cite{meirovitch2016multi} use a CNN to iteratively grow one instance/neuron at the time, merging one mask after the other. Recently, the work of \cite{meirovitch2019cross} made the process more efficient by employing a combinatorial encoding of the segmentation, but the method remains orders of magnitude slower as compared to the convolutional one proposed here, since in our case all masks are predicted at the same time and for all instances.
-The most closely related to ours is the unpublished independent work from \cite{hirsch2020patchperpix}, where a very similar model is applied to the BBBC010 benchmark microscopy dataset of \emph{C. elegans} worms. However, here we propose a more efficient model that scales to 3D data and provide an extensive comparison to related models predicting long-range pixel-pair affinities. 
+The line of research closest to ours predicts overlapping \maskname masks in a sliding window style across the entire image. The work of \cite{liu2016multi} aggregates overlapping masks and computes intersection over union scores between them.
+In neuron segmentation, flood-filling networks \cite{januszewski2018high} and MaskExtend \cite{meirovitch2016multi} use a CNN to iteratively grow one instance/neuron at a time, merging one mask after the other. Recently, the work of \cite{meirovitch2019cross} made the process more efficient by employing a combinatorial encoding of the segmentation, but the method remains orders of magnitude slower as compared to the convolutional one proposed here, since in our case all masks are predicted at the same time and for all instances.
+The most closely related work to ours is the independent preprint \cite{hirsch2020patchperpix}, where a very similar model is applied to the BBBC010 benchmark microscopy dataset of \emph{C. elegans} worms. However, here we propose a more efficient model that scales to 3D data, and we provide an extensive comparison to related models predicting long-range pixel-pair affinities. 
 %  a parameter-free algorithm to aggregate overlapping masks.
 % \TODO{Fred?}
 
@@ -23,8 +24,8 @@ Instance-aware edge detection has experienced recent progress thanks to deep lea
 Other related work \cite{funke2018large,turaga2009maximin} performs instead boundary detection via a structured learning approach.
 In neuron segmentation, boundaries predicted by a CNN are converted to final instances with subsequent postprocessing and superpixel-merging.
 Some methods use loopy graphs \cite{kaynig2015large,krasowski2015improving} or trees \cite{meirovitch2016multi,liu2016sshmt,liu2014modular,funke2015learning,uzunbas2016efficient,nunez2013machine,knowles2016rhoananet} to represent the region merging hierarchy. 
-Others, define a graph with both positive and negative weights and formulates the problem in a combinatorial framework, known as \emph{multicut} or \emph{correlation clustering} problem \cite{kappes2011globally,chopra1991multiway,beier2017multicut}. 
-In neuron segmentation and connectomics, exact solvers can tackle problems of considerable size \cite{andres2012globally}, but accurate approximations \cite{pape2017solving,beier2017multicut,beier2016efficient,yarkony2012fast,beier2014cut} and greedy agglomerative algorithms \cite{levinkov2017comparative,wolf2019mutex,bailoni2019generalized} have also been proposed.
+Others define a graph with both positive and negative weights and formulate the problem in a combinatorial framework, known as multicut or correlation clustering problem \cite{kappes2011globally,chopra1991multiway,beier2017multicut}. 
+In neuron segmentation and connectomics, exact solvers can tackle problems of considerable size \cite{andres2012globally}, but accurate approximations \cite{pape2017solving,beier2017multicut,beier2016efficient,yarkony2012fast,beier2014cut} and greedy agglomerative algorithms \cite{levinkov2017comparative,wolf2019mutex,bailoni2019generalized} are required on larger problems.
 % and persistence criteria \cite{lange2018partial,lange2018combinatorial} have been proposed for even larger graphs. 
 
 
