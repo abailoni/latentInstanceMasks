@@ -11,7 +11,7 @@ On the other hand, proposal-free methods adopt a bottom-up approach by directly 
  
 % A graph partitioning algorithm is used to obtain object instances.
 Some recent successful proposal-free approaches \cite{januszewski2018high,meirovitch2016multi,liu2016multi} tackle instance segmentation by predicting, for a given patch of the input image, whether or not each pixel in the patch is part of the same instance associated to the central pixel of the patch. 
-This results in many probability masks, which from now on we call \emph{\maskname masks}, that are then repeatedly predicted, in a sliding window style, across the entire image. 
+This results in many probability masks, which from now on we call \emph{\maskname masks}, that are then repeatedly predicted across the entire image, either in a sliding window style or by starting from a seed and then shifting the field of view depending on the previously predicted masks. 
 Final object-instances are then obtained by aggregating predictions from overlapping masks.
 % In the following, we will refer to these patch predictions as \emph{\maskname masks}.
 
