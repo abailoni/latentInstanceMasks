@@ -2,7 +2,7 @@
 
 \section{Experiments on Neuron Segmentation}
 \subsection{Data: CREMI Challenge} \label{sec:cremi_challenge}
-We evaluate and compare our method on the task of neuron segmentation in electron microscopy (EM) image volumes. This application is of key interest in connectomics, a field of neuro-science with the goal of reconstructing neural wiring diagrams spanning complete central nervous systems. Currently, only proof-reading or manual tracing yields sufficient accuracy for correct circuit reconstruction \cite{schlegel2017learning}, thus further progress is required in automated reconstruction methods.
+We evaluate and compare our method on the task of neuron segmentation in electron microscopy (EM) image volumes. This application is of key interest in connectomics, a field of neuro-science with the goal of reconstructing neural wiring diagrams spanning complete central nervous systems. Currently, only proof-reading or manual tracing yields sufficient accuracy for correct circuit reconstruction \cite{schlegel2017learning}, thus further progress is required in automated reconstruction methods (see \TODO{supplementary material} for an example of output neuron segmentation).
 
 We test our method on the competitive CREMI 2016 EM Segmentation Challenge \cite{cremiChallenge} that is currently the neuron segmentation challenge with the largest amount of training data available. The dataset comes from serial section EM of \emph{Drosophila} fruit-fly brain tissue and consists of 6 volumes of $1250\times 1250\times 125$ voxels at resolution $4\times 4\times 40$ nm$^3$, three of which come with publicly available training ground truth. 
 We achieved the best scores by downscaling the resolution of the EM data by a factor $(\frac{1}{2},\frac{1}{2},1)$, since this helped increasing the 3D context provided as input to the model.
@@ -195,7 +195,7 @@ SNB+EffAff & WSDT+GaspAvg & 0.254 & 0.355 \\
         \end{tabular}
         % }
         \vspace{1em}
-        \caption{Comparison experiments on our CREMI validation set} \label{tab:val_results}
+        \caption{Comparison experiments on our CREMI validation set. All models that were trained to predict \maskname masks (ENB) achieved better scores than the strong baseline SNB representing the current state-of-the-art method. The model that performed best was the one using the method proposed in Sec. \ref{sec:aggr_affs} to average overlapping masks (AggrAff).} \label{tab:val_results}
 \end{table}
 
 
@@ -218,23 +218,23 @@ Finally, we also note that superpixel-based methods did not perform equally well
 
 \begin{table}[t]
 \centering
+\scriptsize
 \begin{minipage}[t]{\textwidth}
     \centering
-    % \scriptsize
-        \begin{tabular}[t]{L{18em} c M{9.8em}}
-        Model & \thead{Partitioning\\algorithm} & \makecell{CREMI-Score \\(lower is better)}  \\ \midrule
-\UPDATE{GaspUNet}+SNB+EffAff \cite{bailoni2019generalized} & WSDT+LMC  &  0.221\\
-PNIUNet+SNB+EffAff \cite{lee2017superhuman} & \UPDATE{WSDT+GaspAvg}  & 0.228 \\
-\UPDATE{GaspUNet}+SNB+EffAff \cite{bailoni2019generalized} & GaspAvg $\dagger$ & 0.241 \\
-\textbf{OurUNet+ENB+SNB+AggrAff} &\textbf{MWS} $\dagger$ & \textbf{0.246} \\
-\textbf{OurUNet+ENB+EffAff}& \textbf{WSDT+GaspAvg}  & 0.268 \\
-MALAUNet+EffAff \cite{funke2018large} & WSDT+MC  & 0.276 \\
-\textbf{OurUNet+ENB+SNB+EffAff} & \textbf{WSDT+GaspAvg} & 0.280 \\
-CRUNet+EffAff \cite{zeng2017deepem3d} & \UPDATE{?} & 0.566  \\
-LFC+EffAff \cite{parag2017anisotropic} & \UPDATE{?} & 0.616  \\
+        \begin{tabular}[t]{L{18em} c M{8.7em} c}
+        Model & \makecell{Partitioning\\algorithm} & \makecell{CREMI-Score \\(lower is better)} & \makecell{No superpixels\\ required}  \\ \midrule
+\UPDATE{GaspUNet}+SNB+EffAff \cite{bailoni2019generalized} & WSDT+LMC  &  0.221 & \\
+PNIUNet+SNB+EffAff \cite{lee2017superhuman} & \UPDATE{Z-Watershed + Agglo}  & 0.228 & \\
+\UPDATE{GaspUNet}+SNB+EffAff \cite{bailoni2019generalized} & GaspAvg & 0.241 & $\checkmark$ \\
+\textbf{OurUNet+ENB+SNB+AggrAff} &\textbf{MWS} & \textbf{0.246} & $\checkmark$ \\
+OurUNet+ENB+EffAff& WSDT+GaspAvg  & 0.268 \\
+MALAUNet+EffAff \cite{funke2018large} & WSDT+Multicut  & 0.276 \\
+OurUNet+ENB+SNB+EffAff & WSDT+GaspAvg & 0.280 \\
+CRUNet \cite{zeng2017deepem3d} & 3D-Watershed & 0.566  \\
+LFC+EffAff \cite{parag2017anisotropic} & Z-Watershed + Agglo & 0.616  \\
         \end{tabular}
         \vspace*{0.99em}
-    \caption{Representative excerpt of the published methods currently part of the CREMI leaderboard \cite{cremiChallenge} (March 2020). Partitioning algorithms that do not rely on super-pixels are marked with $\dagger$. We highlighted our methods in bold.}
+    \caption{Representative excerpt of the published methods currently part of the CREMI leaderboard \cite{cremiChallenge} (March 2020). The best method proposed in this work (highlighted in bold) achieves competitive scores and is based on an efficient parameter-free algorithm that does not rely on superpixels.}
     \label{tab:test_results}
 \end{minipage}
 \end{table}
