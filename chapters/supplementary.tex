@@ -14,15 +14,22 @@ The final model trained on all available ground truth labels is trained with a s
 \item UNet: 3 depth levels with downscaling factor 2, feature maps, etc...
 \item In the supplementary material, we provide all the architecture details: crops in the decoder of the UNet
 \item we predict two types of \maskname masks at the highest level of the hierarchy
+\item Post-processing (remove small segments)
 \end{itemize}
 
 \textbf{Glia classifier} -- As a final post-processing step, we merge neighboring instances that have been classified as \emph{glia segments} (putative astrocyte). This is a common procedure in neuron segmentation \TODO{CIT}\cite{lee2019learning}, since glia segments are substantially different from the other neurons and are usually considered separately in the final reconstructed diagram of neural circuit connectivity. Glia segments usually present a main body with a lot of very thin glial processes
 
-
 \begin{figure}[t]
 \centering
         % \includegraphics[width=0.4\textwidth,trim=0.25in 0.25in 0.68in 0.36in,clip]{./figs/SSBM_experiments.pdf} % 0.45
-        \includegraphics[width=0.7\textwidth]{./figs/alg_explaned.jpg} % 0.45
+        \includegraphics[width=\textwidth]{./figs/mask_cases.pdf} % 0.45
+        \caption{The architecture is very similar to a UNet and the ones proposed in \cite{lee2017superhuman,funke2018large}}
+    \label{fig:mask_cases}
+\end{figure}
+\begin{figure}[t]
+\centering
+        % \includegraphics[width=0.4\textwidth,trim=0.25in 0.25in 0.68in 0.36in,clip]{./figs/SSBM_experiments.pdf} % 0.45
+        \includegraphics[width=\textwidth]{./figs/mask_average.pdf} % 0.45
         \caption{\TODO{Update fig}  Illustration of the proposed parameter-free method to convert \maskname masks to edge weights...}
     \label{fig:alg_explained}
 \end{figure}
@@ -30,8 +37,52 @@ The final model trained on all available ground truth labels is trained with a s
 \begin{figure}[t]
 \centering
         % \includegraphics[width=0.4\textwidth,trim=0.25in 0.25in 0.68in 0.36in,clip]{./figs/SSBM_experiments.pdf} % 0.45
-        \includegraphics[width=\textwidth]{./figs/architecture.pdf} % 0.45
-        \caption{\TODO{Update fig} Multi-scale patch prediction...}
+        \includegraphics[width=\textwidth]{./figs/UNet_architecture.pdf} % 0.45
+        \caption{The architecture is very similar to a UNet and the ones proposed in \cite{lee2017superhuman,funke2018large}}
     \label{fig:comparing_masks_affs}
+\end{figure}
+
+
+\begin{figure}[t]
+\centering
+        % \includegraphics[width=0.4\textwidth,trim=0.25in 0.25in 0.68in 0.36in,clip]{./figs/SSBM_experiments.pdf} % 0.45
+        \includegraphics[width=\textwidth,trim=1.80in 1.4in 1.8in 1.50in,clip]{./figs/MWS_segm.pdf} % 0.45
+        \caption{Example of output segmentation with MWS...}
+    \label{fig:MWS_segm}
+\end{figure}
+
+Lorem Ipsum è un testo segnaposto utilizzato nel settore della tipografia e della stampa. Lorem Ipsum è considerato il testo segnaposto standard sin dal sedicesimo secolo, quando un anonimo tipografo prese una cassetta di caratteri e li assemblò per preparare un testo campione.
+\begin{figure}[t]
+\begin{subfigure}[t]{0.47\linewidth}
+\centering
+\includegraphics[width=0.75\linewidth,trim=1.50in 1.4in 1.4in 1.50in,clip]{./figs/affs_compare/raw_mod.pdf} % 
+\caption{\centering Raw image}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.47\textwidth}
+\centering
+\includegraphics[width=0.75\linewidth,trim=1.50in 1.4in 1.4in 1.50in,clip]{./figs/affs_compare/GT.pdf} % ,trim=0.25in 0.25in 0.68in 0.36in,clip
+\caption{\centering Ground truth segmentation \UPDATE{overlayed with the raw image}}
+\end{subfigure}\vspace{2em}\\
+\begin{subfigure}[t]{0.47\linewidth}
+\centering
+\includegraphics[width=0.75\linewidth,trim=1.50in 1.4in 1.4in 1.50in,clip]{./figs/affs_compare/affs1.pdf} % ,trim=0.25in 0.25in 0.68in 0.36in,clip
+\caption{\centering Affinities from sparse neigh. branch (along vertical direction)}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.47\textwidth}
+\centering
+\includegraphics[width=0.75\linewidth,trim=1.50in 1.4in 1.4in 1.50in,clip]{./figs/affs_compare/affs2.pdf} % ,trim=0.25in 0.25in 0.68in 0.36in,clip
+\caption{\centering Affinities from sparse neigh. branch (along horizontal direction)}
+\end{subfigure}\vspace{2em}\\
+\begin{subfigure}[t]{0.47\linewidth}
+\centering
+\includegraphics[width=0.75\linewidth,trim=1.50in 1.4in 1.4in 1.50in,clip]{./figs/affs_compare/affs3.pdf} % ,trim=0.25in 0.25in 0.68in 0.36in,clip
+\caption{\centering Affinities from averaging overlapping masks (along vertical direction)}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.47\textwidth}
+\centering
+\includegraphics[width=0.75\linewidth,trim=1.50in 1.4in 1.4in 1.50in,clip]{./figs/affs_compare/affs4.pdf} % ,trim=0.25in 0.25in 0.68in 0.36in,clip
+\caption{\centering Affinities from averaging overlapping masks (along horizontal direction)}
+\end{subfigure}
+\caption{Comparison of affinities... What is blue and what is red}\label{fig:affs_comparison}
 \end{figure}
 
