@@ -21,7 +21,7 @@ On the test samples, we run predictions for overlapping volumes and then average
  
 
 
-\subsection{Architecture details of the tested models}
+\subsection{Architecture details of the tested models}\label{sec:models_details}
 As a backbone model we use a 3D U-Net consisting of a hierarchy of four feature maps with anisotropic downscaling factors $(\frac{1}{2},\frac{1}{2},1)$, similarly to \cite{lee2019learning,lee2017superhuman,wolf2018mutex}. 
 % U-Net with three levels in the feauter map hierarchy, involving downscaling factors $(1, \frac{1}{2},\frac{1}{2})$
 Models are trained with the Adam optimizer and a batch size equal to one. Before applying the loss, we slightly crop the predictions to prevent training on borders where not enough surrounding context is provided. 
