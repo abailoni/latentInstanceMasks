@@ -1,22 +1,18 @@
 % !TEX root = ../patchEmbeddings_review.tex
 
-\begin{figure}[b]
-\centering
-        % \includegraphics[width=0.4\textwidth,trim=0.25in 0.25in 0.68in 0.36in,clip]{./figs/SSBM_experiments.pdf} % 0.45
-        \includegraphics[width=0.9\textwidth]{./figs/mask_cases.pdf} % 0.45
-        \caption{Inferring instance-aware affinity between pixel $u$ and $v$ (blue and green dots, respectively) from \maskname masks. We consider binary \maskname masks, which are highlighted by white background and a red cross representing the central pixel. Dashed lines represent the ground-truth boundaries separating neighboring segments of the \maskname mask. In total, we distinguish three cases: \textbf{(a)} when both pixels are part of the mask, then a high affinity between the pixels is predicted; \textbf{(b)} when only one of them is part of the mask, then we predict a low affinity; \textbf{(c)} finally, when both pixels are not part of the mask, then nothing can be said about their affinity.}
-    \label{fig:mask_cases}
-\end{figure}
+\renewcommand{\thesection}{S\arabic{section}}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
 
 \section{Supplementary material}
-\subsection{Averaging overlapping masks}
-In Sec. \ref{sec:aggr_affs}, we introduce a parameter-free algorithm \ref{alg:computing_affinities} to average overlapping masks and extract affinities that can be then used as edge weights of a signed graph with both positive and negative weights. 
+% \subsection{Averaging overlapping masks}
+% In Sec. \ref{sec:aggr_affs}, we introduce a parameter-free algorithm \ref{alg:computing_affinities} to average overlapping masks and extract affinities that can be then used as edge weights of a signed graph with both positive and negative weights. 
 
-In Fig. \ref{fig:alg_explained}, we show a simplified example of how Algorithm \ref{alg:computing_affinities} computes affinities between a pair of pixels $u$ and $v$.
-In Fig. \ref{fig:mask_cases}, we list the cases in which a \maskname mask can be used or not to predict the affinity between two pixels belonging to the mask.  
-In Fig. \ref{fig:affs_comparison} we compare affinities predicted either by averaging \maskname masks or by directly predicting them as a binary classification output of the model trained with a dense channel-wise S\o rensen-Dice loss.
+% In Fig. \ref{fig:alg_explained}, we show a simplified example of how Algorithm \ref{alg:computing_affinities} computes affinities between a pair of pixels $u$ and $v$.
+% In Fig. \ref{fig:mask_cases}, we list the cases in which a \maskname mask can be used or not to predict the affinity between two pixels belonging to the mask.  
+% In Fig. \ref{fig:affs_comparison} we compare affinities predicted either by averaging \maskname masks or by directly predicting them as a binary classification output of the model trained with a dense channel-wise S\o rensen-Dice loss.
 
-Algorithm \ref{alg:computing_affinities} is efficiently implemented on GPU by making use of the \texttt{fold} and \texttt{unfold} functions in PyTorch \cite{NEURIPS2019_9015}. 
+% Algorithm \ref{alg:computing_affinities} is efficiently implemented on GPU by making use of the \texttt{fold} and \texttt{unfold} functions in PyTorch \cite{NEURIPS2019_9015}. 
 
 
 \subsection{Graph neighborhood structure and output instance segmentation}
@@ -26,7 +22,8 @@ In Fig. \ref{fig:MWS_segm}, we show the resulting instance segmentation obtained
 \paragraph{Removing small segments} -- After running the Mutex Watershed, we use a simple post-processing step to delete small segments on the boundaries, most of which are given by single-voxel clusters. On the neuron segmentation predictions, we deleted all regions with less than 200 voxels and used a seeded watershed algorithm to expand the bigger segments.
 
 
-\subsection{Details on the model architecture}
+\subsection{Details on the model architecture}\label{sec:arch_details_suppl}
+\TODO{Add image with PCA embeddings?}
 Fig. \ref{fig:model_architecture} shows the details on the 3D-UNet architecture and Table \ref{tab:neighborhood_structures} lists the sparse neighborhood structures predicted by the \emph{\sparseBr branches}.
 % - Cite architecture figure Fig: we use three type of nets, we only use highest res predictions for computing affinities of the graph
 
@@ -56,47 +53,42 @@ The final model trained on all available ground truth labels is trained with a s
 
 % \textbf{Glia classifier} -- As a final post-processing step, we merge neighboring instances that have been classified as \emph{glia segments} (putative astrocyte). This is a common procedure in neuron segmentation \TODO{CIT}\cite{lee2019learning}, since glia segments are substantially different from the other neurons and are usually considered separately in the final reconstructed diagram of neural circuit connectivity. Glia segments usually present a main body with a lot of very thin glial processes
 
-\begin{figure}[t]
-\centering
-        % \includegraphics[width=0.4\textwidth,trim=0.25in 0.25in 0.68in 0.36in,clip]{./figs/SSBM_experiments.pdf} % 0.45
-        \includegraphics[width=\textwidth]{./figs/mask_average.eps} % 0.45
-        \caption{Illustration of the proposed parameter-free method to average overlapping masks in order to compute a pixel-pair affinity between pixel $u$ and pixel $v$ (both highlighted in red in the ground-truth segmentation at the top). For simplicity, we only consider three masks among all the ones including both pixel $u$ and $v$. For each of the three masks in the lower part of the figure, we highlight in red the predicted probabilities for $u$ and $v$ to be part of the instance that covers the central pixel of the mask. In \emph{Mask 1}, both pixels are not part of the \maskname mask, so there is no evidence about their affinity; in \emph{Mask 2}, only $v$ is part of the mask, so there is a strong evidence for no affinity between $u$ and $v$; in \emph{Mask 3}, $u$ is predicted to be part of the mask only with a low confidence, so the contribution of this mask in the final average will be weak. The final affinity value of edge $(u,v)$ is given by the weighted average of the collected affinities $a_i$ weighted with the evidence weights $\evidW_i$: $\bar{a}_e= \sum_{i} a_i \evidW_i\,/\,\sum_{i}\evidW_i$}
-    \label{fig:alg_explained}
-\end{figure}
 
-\begin{figure}[t]
-\begin{subfigure}[t]{0.47\linewidth}
-\centering
-\includegraphics[width=0.65\linewidth,trim=1.50in 1.4in 1.4in 1.50in,clip]{./figs/affs_compare/raw_mod.pdf} % 
-\caption{\centering Raw image}
-\end{subfigure}\hfill
-\begin{subfigure}[t]{0.47\textwidth}
-\centering
-\includegraphics[width=0.65\linewidth,trim=1.50in 1.4in 1.4in 1.50in,clip]{./figs/affs_compare/GT.pdf} % ,trim=0.25in 0.25in 0.65in 0.36in,clip
-\caption{\centering Ground truth segmentation overlaid with the raw image}
-\end{subfigure}\vspace{2em}\\
-\begin{subfigure}[t]{0.47\linewidth}
-\centering
-\includegraphics[width=0.65\linewidth,trim=1.50in 1.4in 1.4in 1.50in,clip]{./figs/affs_compare/affs1.pdf} % ,trim=0.25in 0.25in 0.65in 0.36in,clip
-\caption{\centering Affinities trained with S\o rensen-Dice loss (along vertical direction)}
-\end{subfigure}\hfill
-\begin{subfigure}[t]{0.47\textwidth}
-\centering
-\includegraphics[width=0.65\linewidth,trim=1.50in 1.4in 1.4in 1.50in,clip]{./figs/affs_compare/affs2.pdf} % ,trim=0.25in 0.25in 0.65in 0.36in,clip
-\caption{\centering Affinities trained with S\o rensen-Dice loss (along horizontal direction)}
-\end{subfigure}\vspace{2em}\\
-\begin{subfigure}[t]{0.47\linewidth}
-\centering
-\includegraphics[width=0.65\linewidth,trim=1.50in 1.4in 1.4in 1.50in,clip]{./figs/affs_compare/affs3.pdf} % ,trim=0.25in 0.25in 0.65in 0.36in,clip
-\caption{\centering Affinities from averaging overlapping masks (along vertical direction)}
-\end{subfigure}\hfill
-\begin{subfigure}[t]{0.47\textwidth}
-\centering
-\includegraphics[width=0.65\linewidth,trim=1.50in 1.4in 1.4in 1.50in,clip]{./figs/affs_compare/affs4.pdf} % ,trim=0.25in 0.25in 0.65in 0.36in,clip
-\caption{\centering Affinities from averaging overlapping masks (along horizontal direction)}
-\end{subfigure}
-\caption{Comparison between different ways of predicting affinities and their robustness to noise. \textbf{(a-b)} Raw data and  associated ground-truth labels. \textbf{(c-d)} Affinities predicted by the \emph{sparse-neighborhood branch}, which is trained with a dense channel-wise S\o rensen-Dice loss (high affinities are represented in red, low ones in blue). \textbf{(e-f)} Affinities computed by averaging overlapping masks (AffAggr). We note how averaged affinities are smoother and present a more consistent boundary evidence in the noisy region highlighted by the red circle. In these plots we show two types of affinities representing neighborhood relations along the horizontal (-4, 0, 0) and vertical (0, -4, 0) directions.}\label{fig:affs_comparison}
-\end{figure}
+
+
+% \begin{figure}[t]
+% \begin{subfigure}[t]{0.47\linewidth}
+% \centering
+% \includegraphics[width=0.65\linewidth,trim=1.50in 1.4in 1.4in 1.50in,clip]{./figs/affs_compare/raw_mod.pdf} % 
+% \caption{\centering Raw image}
+% \end{subfigure}\hfill
+% \begin{subfigure}[t]{0.47\textwidth}
+% \centering
+% \includegraphics[width=0.65\linewidth,trim=1.50in 1.4in 1.4in 1.50in,clip]{./figs/affs_compare/GT.pdf} % ,trim=0.25in 0.25in 0.65in 0.36in,clip
+% \caption{\centering Ground truth segmentation overlaid with the raw image}
+% \end{subfigure}\vspace{2em}\\
+% \begin{subfigure}[t]{0.47\linewidth}
+% \centering
+% \includegraphics[width=0.65\linewidth,trim=1.50in 1.4in 1.4in 1.50in,clip]{./figs/affs_compare/affs1.pdf} % ,trim=0.25in 0.25in 0.65in 0.36in,clip
+% \caption{\centering Affinities trained with S\o rensen-Dice loss (along vertical direction)}
+% \end{subfigure}\hfill
+% \begin{subfigure}[t]{0.47\textwidth}
+% \centering
+% \includegraphics[width=0.65\linewidth,trim=1.50in 1.4in 1.4in 1.50in,clip]{./figs/affs_compare/affs2.pdf} % ,trim=0.25in 0.25in 0.65in 0.36in,clip
+% \caption{\centering Affinities trained with S\o rensen-Dice loss (along horizontal direction)}
+% \end{subfigure}\vspace{2em}\\
+% \begin{subfigure}[t]{0.47\linewidth}
+% \centering
+% \includegraphics[width=0.65\linewidth,trim=1.50in 1.4in 1.4in 1.50in,clip]{./figs/affs_compare/affs3.pdf} % ,trim=0.25in 0.25in 0.65in 0.36in,clip
+% \caption{\centering Affinities from averaging overlapping masks (along vertical direction)}
+% \end{subfigure}\hfill
+% \begin{subfigure}[t]{0.47\textwidth}
+% \centering
+% \includegraphics[width=0.65\linewidth,trim=1.50in 1.4in 1.4in 1.50in,clip]{./figs/affs_compare/affs4.pdf} % ,trim=0.25in 0.25in 0.65in 0.36in,clip
+% \caption{\centering Affinities from averaging overlapping masks (along horizontal direction)}
+% \end{subfigure}
+% \caption{Comparison between different ways of predicting affinities and their robustness to noise. \textbf{(a-b)} Raw data and  associated ground-truth labels. \textbf{(c-d)} Affinities predicted by the \emph{sparse-neighborhood branch}, which is trained with a dense channel-wise S\o rensen-Dice loss (high affinities are represented in red, low ones in blue). \textbf{(e-f)} Affinities computed by averaging overlapping masks (AffAggr). We note how averaged affinities are smoother and present a more consistent boundary evidence in the noisy region highlighted by the red circle. In these plots we show two types of affinities representing neighborhood relations along the horizontal (-4, 0, 0) and vertical (0, -4, 0) directions.}\label{fig:affs_comparison}
+% \end{figure}
 
 \begin{figure}[t]
 \centering

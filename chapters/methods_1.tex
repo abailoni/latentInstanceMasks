@@ -1,4 +1,20 @@
 % !TEX root = ../patchEmbeddings_review.tex
+\begin{figure}[t]
+\centering
+\begin{minipage}[t]{0.36\textwidth}
+        \centering
+        % \includegraphics[width=0.4\textwidth,trim=0.25in 0.25in 0.68in 0.36in,clip]{./figs/SSBM_experiments.pdf} % 0.45
+        \includegraphics[width=0.99\textwidth]{./figs/valid_masks.pdf} % 0.45
+        \captionof{figure}{Some examples of possible two-dimensional binary \maskname masks. Masks \textbf{(a-b)} represent meaningful examples of expected masks. Mask \textbf{(c)} is not expected because it does not contain the central pixel. Mask \textbf{(d)} is also not meaningful because it is composed of multiple connected components.}
+    \label{fig:valid_masks}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.58\textwidth}
+\centering
+\includegraphics[width=0.99\textwidth]{./figs/mask_cases_new.pdf} % 0.45
+        \captionof{figure}{Computing instance-aware affinity between pixel $u$ and $v$ (blue and green dots, respectively) from instance masks associated to the central pixel in the patch (orange cross). Dashed lines represent ground-truth boundaries separating neighboring segments. We distinguish three cases: \textbf{(a)} when both pixels are part of the mask, a high affinity between the pixels is predicted; \textbf{(b)} when only one of them is part of the mask, we predict a low affinity; \textbf{(c)} when both pixels are not part of the mask, nothing can be said about their affinity.}
+    \label{fig:mask_cases}
+\end{minipage}
+\end{figure}
 
 \begin{algorithm}[t]
   \begin{flushleft}
@@ -30,9 +46,20 @@
   \end{flushleft}
 
 \end{algorithm}
+\begin{figure}[t]
+\centering
+        % \includegraphics[width=0.4\textwidth,trim=0.25in 0.25in 0.68in 0.36in,clip]{./figs/SSBM_experiments.pdf} % 0.45
+        \includegraphics[width=0.9\textwidth]{./figs/mask_average_new.eps} % 0.45
+        \caption{Proposed method to average overlapping masks and compute the affinity between pixel $u$ and pixel $v$ (highlighted in red in the ground-truth segmentation on the left). For simplicity, we only consider three masks among all the ones including both pixels $u$ and $v$. 
+        % For each of the three masks in the lower part of the figure, we highlight in red the predicted probabilities for $u$ and $v$ to be part of the instance that covers the central pixel of the mask. 
+        In \emph{Mask 1}, only $v$ is part of the mask, so there is a strong evidence for no affinity between $u$ and $v$; in \emph{Mask 2},  $u$ is predicted to be part of the mask only with a low confidence, so the contribution of this mask in the final average will be weak; in \emph{Mask 3}, both pixels are not part of the \maskname mask, so there is no evidence about their affinity. 
+        The final affinity value of edge $(u,v)$ is given by the weighted average of the collected affinities $a_i$ weighted with the evidence weights $\evidW_i$: $\bar{a}_e= \sum_{i=1}^3 a_i \evidW_i\,/\,\sum_{i}\evidW_i$}
+    \label{fig:alg_explained}
+\end{figure}
 
-\section{Extracting Affinities from \maskname Masks}
-In order to obtain an instance segmentation from the predictions of the model presented in Sec. \ref{sec:model}, we now compute instance-aware pixel-pair affinities for a given sparse $N$-neighborhood structure (see \TODO{supplementary material} for details about the used structure) and use them as edge weights of a pixel grid-graph $\mathcal{G}(V,E)$, such that each node represents a pixel / voxel of the image. The graph is then partitioned to obtain object instances.
+
+\section{Extracting Affinities from Central Instance Masks}
+In order to obtain an instance segmentation from the predictions of the model presented in Sec. \ref{sec:model}, we now compute instance-aware pixel-pair affinities for a given sparse $N$-neighborhood structure (see Table \ref{tab:neighborhood_structures} in supplementary material for details about the structure) and use them as edge weights of a pixel grid-graph $\mathcal{G}(V,E)$, such that each node represents a pixel / voxel of the image. The graph is then partitioned to obtain object instances.
 % \TODO{Section intro} Second contribution; two ways
 % In this section, we propose two ways to perform something similar and use the predicted per-pixel \maskname masks to define the edge weights of a grid-graph.
 
@@ -54,12 +81,13 @@ Related work either thresholds the predicted \maskname masks \cite{januszewski20
 and a parameter-free partitioning algorithm can be employed to yield instances.
 % Related work in \cite{liu2016multi} aggregate \maskname masks by computing Intersection over Union (IoU) scores for overlapping patches, however these scores cannot be translated into attractive and repulsive cues of the graph, so hierarchical agglomerative clusterings 
 
-Here, we propose a simple method to aggregate predictions from multiple patches (see Algorithm \ref{alg:computing_affinities} and explanatory \TODO{figures in supplementary material}). Let us assume we want to compute the weight for an edge $e$ linking pixels $\coord{u}$ and $\coord{v}$. Then, we consider all predicted \maskname masks including both $\coord{u}$ and $\coord{v}$. For example, if $\coord{u}$ and $\coord{v}$ are direct neighbors and the predicted masks have shape $K\times K$, then there will be $K(K-1)$ masks including both pixel $\coord{u}$ and $\coord{v}.$\footnote{Note that here we ignore possible boundary effects by considering two pixels close to the image border.} 
-However, not all these masks are informative: A mask $\mathcal{M}_{\coord{c}_i}$ centered at pixel $\coord{c}_i$ provides any evidence about the affinity between pixels $\coord{u}$ and $\coord{v}$ only if at least one of the two pixels belongs to the mask $\mathcal{M}_{\coord{c}_i}$ mask (fuzzy OR operator at line 8 in Alg. \ref{alg:computing_affinities}).
-If both pixels do not belong to it, then the evidence weight $\evidW_i$ goes to zero (\TODO{Fig. \ref{fig:mask_cases}c in supplementary material}).
-On the other hand, we distinguish two cases when there is evidence and at least one pixel belongs to the $\mathcal{M}_{\coord{c}_i}$ mask: i)
-both pixels belong to it (fuzzy AND operator at line 7 in Alg. \ref{alg:computing_affinities}), so by transitivity we conclude they should be in the same instance and their affinity $a_i$ should tend to one (\TODO{Fig. \ref{fig:mask_cases}a}); 
-ii) only one pixel belongs to the $\mathcal{M}_{\coord{c}_i}$ mask and their affinity should tend to zero (\TODO{Fig. \ref{fig:mask_cases}b}). 
+Here, we propose a simple algorithm to aggregate predictions from multiple patches: Fig. \ref{fig:alg_explained} shows a simplified example of how Algorithm \ref{alg:computing_affinities} computes the affinity for an edge $e$ linking a pair of pixels $\coord{u}$ and $\coord{v}$.
+As a first step, the algorithm loops over all predicted \maskname masks including both $\coord{u}$ and $\coord{v}$. For example, if $\coord{u}$ and $\coord{v}$ are direct neighbors and the predicted masks have shape $K\times K$, then there will be $K(K-1)$ masks including both pixel $\coord{u}$ and $\coord{v}.$\footnote{Note that here we ignore possible boundary effects by considering two pixels close to the image border.} 
+However, not all these masks are informative, as we visually explain in Fig.~\ref{fig:mask_cases}: a mask $\mathcal{M}_{\coord{c}_i}$ centered at pixel $\coord{c}_i$ provides any evidence about the affinity between pixels $\coord{u}$ and $\coord{v}$ only if at least one of the two pixels belongs to the mask (fuzzy OR operator at line 8 in Alg. \ref{alg:computing_affinities}).
+If both pixels do not belong to it, then the evidence weight $\evidW_i$ goes to zero (see Fig. \ref{fig:mask_cases}c).
+On the other hand, we distinguish two cases when there is evidence and at least one of the two pixels belongs to the mask: i)
+both pixels belong to the mask  (case in Fig. \ref{fig:mask_cases}a), so by transitivity we conclude they should be in the same instance and their affinity $a_i$ should tend to one (fuzzy AND operator at line 7 in Alg. \ref{alg:computing_affinities}); 
+ii) only one pixel belongs to the mask (case in Fig. \ref{fig:mask_cases}b), so their affinity should tend to zero. 
 
 At the end, we compute a weighted average $\bar{a}_e$ and variance $\sigma^2_e$ of the collected affinities from all overlapping masks, such that masks with more evidence will contribute more on average, and the obtained variance is a measure of how consistent were the predictions across masks. 
 The algorithm was implemented on GPU using PyTorch \cite{NEURIPS2019_9015} and the variance was computed via Welford's online stable algorithm \cite{welford1962note}.

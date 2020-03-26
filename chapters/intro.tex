@@ -24,8 +24,9 @@ This results a probability mask, which from now on we call \emph{\maskname mask}
 Final object-instances are then obtained by aggregating predictions from overlapping masks which is in itself a nontrivial and interesting problem.
 % In the following, we will refer to these patch predictions as \emph{\maskname masks}.
 
-In this work, we introduce a new proposal-free segmentation method that is also based on predicting \maskname masks\footnote{For interesting, closely related but independent work, see preprint \cite{hirsch2020patchperpix}.}
-\footnote{Note to reviewers: As per ECCV reviewer instructions, there is no need to cite arxiv papers and they are not considered as prior \TODO{state of the art}. However, for maximum transparency and because we appreciate their fine work, we propose to keep footnote (1), hopefully upgraded to a full reference in our camera-ready version.}. However, our approach comes with four main advantages compared to previous methods.
+In this work, we introduce a new proposal-free segmentation method that is also based on predicting \maskname masks\footnote{For interesting, closely related but independent work, see preprint \cite{hirsch2020patchperpix}.}.
+% \footnote{Note to reviewers: As per ECCV reviewer instructions, there is no need to cite arxiv papers and they are not considered as prior \TODO{state of the art}. However, for maximum transparency and because we appreciate their fine work, we propose to keep footnote (1), hopefully upgraded to a full reference in our camera-ready version.}
+However, our approach comes with four main advantages compared to previous methods.
 Firstly, our model concurrently predicts all \maskname masks, one for each pixel, by using a fully-convolutional approach with much smaller computational footprint than previous methods iteratively predicting one instance at the time, one mask after the other \cite{januszewski2018high,meirovitch2016multi}.
 Secondly, our approach predicts \maskname masks in a low dimensional latent representation (see Fig. \ref{fig:main_figure}c), which results in great memory savings that are strictly required to apply the method to large volumetric images. 
 Thirdly, the proposed approach aggregates predictions from overlapping \maskname masks without the need for any extra parameter or threshold and outputs predictions with associated uncertainty;
