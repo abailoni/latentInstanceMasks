@@ -51,7 +51,7 @@ Given the ground-truth \maskname masks $\hat{\mathcal{M}}_{\coord{u}_i}$ defined
 \begin{equation}
 \mathcal{J}_{\mathrm{MaskLoss}} = - \frac{\sum_{i=1}^R \sum_{\coord{n} \in \mathcal{N}_{K\times K}} \big(1-\mathcal{M}_{\coord{u}_i}(\coord{n})\big)\cdot \big(1-\hat{\mathcal{M}}_{\coord{u}_i}(\coord{n})\big)}{\sum_{i=1}^R \sum_{\coord{n}\in \mathcal{N}_{K\times K}} \Big( \big(1-\mathcal{M}_{\coord{u}_i}(\coord{n})\big)^2 + \big(1-\hat{\mathcal{M}}_{\coord{u}_i}(\coord{n})\big)^2 \Big)}.
 \end{equation} 
-Ground-truth labels are not always pixel-precise and it is often impossible to estimate the correct label for pixels that are close to a ground-truth label transition. Thus, in order to avoid noise during training, we predict completely empty masks for pixels that are less than two pixels away from a label transition. 
+Ground-truth labels are not always pixel-precise and it is often impossible to estimate the correct label for pixels that are close to a ground-truth label transition. Thus, in order to avoid noise during training, we predict completely empty masks for pixels that are less than two pixels away from a label transition, so that the model is trained to predict single-pixel clusters along the ground-truth boundaries. In our experiments, this approach performed better than masking the training loss along the boundaries.
 
 
 \subsection{Predicting Multi-Scale Central Instance Masks}\label{sec:multiscale_patches}
