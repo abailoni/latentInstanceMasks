@@ -54,7 +54,7 @@ Given the ground-truth \maskname masks $\hat{\mathcal{M}}_{\coord{u}_i}$ defined
 Ground-truth labels are not always pixel-precise and it is often impossible to estimate the correct label for pixels that are close to a ground-truth label transition. Thus, in order to avoid noise during training, we predict completely empty masks for pixels that are less than two pixels away from a label transition. 
 
 
-\subsection{Predicting Multi-Scale \maskname Masks}\label{sec:multiscale_patches}
+\subsection{Predicting Multi-Scale Central Instance Masks}\label{sec:multiscale_patches}
 Previous related work both on neuron segmentation \cite{lee2017superhuman} and natural images \cite{liu2018affinity,Gao_2019_ICCV} shows that, when using the training strategy presented in Sec. \ref{sec:affs_from_sparse}, predicting long-range affinities between distant pixels improves accuracy as compared to predicting only short-range ones. However, in the new training strategy proposed in Sec. \ref{sec:encoding_masks}, predicting large \maskname masks would translate to a bigger model that, on 3D data, would have to be trained on a small 3D input field of view.
 This, in practice, usually decreases accuracy because of the reduced 3D context available to the network.
 % whose size is an important hyper-parameter in neuron segmentation since the correct detection of mitochondria and other organelles strongly depends on how much surrounding 3D context is provided during training.

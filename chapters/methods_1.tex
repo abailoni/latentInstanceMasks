@@ -65,17 +65,8 @@ In order to obtain an instance segmentation from the predictions of the model pr
 
 
 
-\subsection{Efficient Affinities for any Sparse Neighborhood}\label{sec:efficient_affs}
-If the model is trained only with the \emph{\sparseBr branch} shown in Fig. \ref{fig:main_figure}a, then the desired $N$-neighborhood structure defining the connectivity of the grid-graph has to be defined before training. 
-On the other hand, if the model is trained with the \emph{\encBr branch} of Fig. \ref{fig:main_figure}c, then the sparse connectivity structure of the graph can be defined at prediction time, but the \maskDec in Fig. \ref{fig:main_figure}c has to be applied to each pixel of the image in order to predict the desired affinity values, given by the value of $N$ in each mask. 
-Alternatively, another much more efficient method consists in predicting these affinities directly from the $Q$-dimensional latent space of the encoded masks, by stacking a few additional convolutional layers that do not need to be jointly trained with the full model and only serve to convert the encoded latent space to the desired $N$ output feature maps.
-% ,  predict  from the previously trained latent space feature maps $Q\times H\times W$.
-In this way, the graph $N$-neighborhood structure can be defined at prediction time, but the resulting model is no more memory-consuming than one directly trained to predict only that specific neighborhood. 
-
-
-
 \subsection{Affinities with Uncertainty from Aggregated Masks}\label{sec:aggr_affs}
-As an alternative to the efficient method proposed in Sec. \ref{sec:efficient_affs}, in this section we propose an algorithm that, without the need of any threshold parameter, aggregates predictions from overlapping \maskname masks and outputs edge weights with associated uncertainty.
+In this section, we propose an algorithm that, without the need of any threshold parameter, aggregates predictions from overlapping \maskname masks and outputs edge weights with associated uncertainty.
 Related work either thresholds the predicted \maskname masks \cite{januszewski2018high,hirsch2020patchperpix,meirovitch2016multi} or computes Intersection over Union (IoU) scores for overlapping patches \cite{liu2016multi}. However, an advantage of predicting pixel-pair affinities / pseudo-probabilities as compared to IoU scores is that affinities can easily be translated into attractive and repulsive interactions in the grid-graph 
 % i.e. edge with either positive or negative weights, 
 and a parameter-free partitioning algorithm can be employed to yield instances.
@@ -92,6 +83,15 @@ ii) only one pixel belongs to the mask (case in Fig. \ref{fig:mask_cases}b), so 
 At the end, we compute a weighted average $\bar{a}_e$ and variance $\sigma^2_e$ of the collected affinities from all overlapping masks, such that masks with more evidence will contribute more on average, and the obtained variance is a measure of how consistent were the predictions across masks. 
 The algorithm was implemented on GPU using PyTorch \cite{NEURIPS2019_9015} and the variance was computed via Welford's online stable algorithm \cite{welford1962note}.
 
+
+\subsection{Efficient Affinities for any Sparse Neighborhood}\label{sec:efficient_affs}
+An advantage of training dense \maskname masks is that the graph $N$-neighborhood structure can be defined at prediction time, after the model has been trained. As an alternative to the method presented in Sec. \ref{sec:aggr_affs} that aggregates overlapping masks, here we propose the following efficient approach to predict affinities for a sparse neighborhood structure: Given a model that has been already trained end-to-end to predict encoded \maskname masks, we stack few additional convolutional layers that are trained to convert the $Q$-dimensional latent mask space to $N$ output feature maps representing affinities for the chosen sparse neighborhood structure. These last layers are not trained jointly with the full model, so in practice they are very quick and easy to train. By using this method, we then avoid to decode all masks explicitly (one for each pixel) and achieve great time and memory savings.
+As a result, we obtain a model that at inference time is no more memory-consuming than the current state-of-the-art approach predicting affinities only for a specific sparse neighborhood structure.
+% If the model is trained only with the \emph{\sparseBr branch} shown in Fig. \ref{fig:main_figure}a, then the desired $N$-neighborhood structure defining the connectivity of the grid-graph has to be defined before training. 
+% On the other hand, if the model is trained with the \emph{\encBr branch} of Fig. \ref{fig:main_figure}c, then the sparse connectivity structure of the graph can be defined at prediction time, but the \maskDec in Fig. \ref{fig:main_figure}c has to be applied to each pixel of the image in order to predict the desired affinity values, given by the value of $N$ in each mask. 
+% Alternatively, another much more efficient method consists in predicting these affinities directly from the $Q$-dimensional latent space of the encoded masks, by stacking a few additional convolutional layers that do not need to be jointly trained with the full model and only serve to convert the encoded latent space to the desired $N$ output feature maps.
+% % ,  predict  from the previously trained latent space feature maps $Q\times H\times W$.
+% In this way, the graph $N$-neighborhood structure can be defined at prediction time, but the resulting model is no more memory-consuming than one directly trained to predict only that specific neighborhood. 
 
 
 
