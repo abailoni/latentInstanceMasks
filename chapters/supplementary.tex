@@ -23,8 +23,7 @@ In Fig. \ref{fig:MWS_segm}, we show the resulting instance segmentation obtained
 
 
 \subsection{Details on the model architecture}\label{sec:arch_details_suppl}
-\TODO{Add image with PCA embeddings?}
-Fig. \ref{fig:model_architecture} shows the details on the 3D-UNet architecture and Table \ref{tab:neighborhood_structures} lists the sparse neighborhood structures predicted by the \emph{\sparseBr branches}. Only the outputs at the highest resolution (given by branches SNB$_1$, ENB$_1$ and ENB$_2$) are used to compute edge weights in the pixel grid-graph. 
+Fig. \ref{fig:model_architecture} shows the details on the 3D-UNet architecture and Table \ref{tab:neighborhood_structures} lists the sparse neighborhood structures predicted by the \emph{\sparseBr branches}. Only the outputs at the highest resolution (given by branches SNB$_1$, ENB$_1$ and ENB$_2$) are used to compute edge weights in the pixel grid-graph. A visualization of the predicted single-instance mask latent spaces is given in Fig. \ref{fig:PCA_embeddings}.
 % - Cite architecture figure Fig: we use three type of nets, we only use highest res predictions for computing affinities of the graph
 
 The input volume has shape $272 \times 272\times12$ which is equivalent to a volume of $544\times 544\times 12$ voxels in the original resolution $4\times 4\times 40$ nm$^3$. Before to apply the loss, we crop the predictions to a shape $224\times 224\times 9$ in order to avoid border artifacts\footnote{Instead of cropping directly the final predictions, we perform several crops in the decoder part of the UNet model (see Upsample + Crop connections in Fig. \ref{fig:model_architecture}) in order to optimize GPU-memory usage.}.
@@ -99,16 +98,27 @@ The final model trained on all available ground truth labels is trained with a s
 \end{figure}
 
 
+
+
 \begin{figure}[t]
 \centering
         % \includegraphics[width=0.4\textwidth,trim=0.25in 0.25in 0.68in 0.36in,clip]{./figs/SSBM_experiments.pdf} % 0.45
         \includegraphics[width=\textwidth]{./figs/UNet_architecture.pdf} % 0.45
         \vspace{1em}
-        \caption{The architecture of the model used in this work, which is strongly inspired by the 3D-UNet models proposed in \cite{lee2017superhuman,funke2018large}. 
+        \caption{\textbf{The architecture of the model}, which is strongly inspired by the 3D-UNet models proposed in \cite{lee2017superhuman,funke2018large}. 
         Red numbers indicate the number of used feature maps.
         As we explain in Sec. \ref{sec:models_details}, in this work we consider three models: i) a baseline model based on the three \emph{\sparseBr branches} SNB$_{i=1,2,3}$, shown in the figure; ii) another model based on the four \emph{\encBr branches} ENB$_{i=1,2,3,4}$; iii) and, finally, a combined model trained with all seven branches shown in the Figure.
         Even though the input of the model is a 3D volume, here, for simplicity, we show an example of 2D input image taken from the stack. As output of the \emph{\sparseBr branches} SNB$_{i=1,2,3}$, we show few channels representing some of the predicted affinities (see Table \ref{tab:neighborhood_structures} for details on the sparse neighborhood structures predicted by each branch SNB$_{i=1,2,3}$). We also show the first three principal components of the encoded masks predicted by the \emph{\encBr branches} ENB$_{i=1,2,3,4}$. All branches ENB$_{i=1,2,3,4}$ predict \maskname masks of the same window size $7 \times 7 \times 5$, but at different resolutions.}
     \label{fig:model_architecture}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+        % \includegraphics[width=0.4\textwidth,trim=0.25in 0.25in 0.68in 0.36in,clip]{./figs/SSBM_experiments.pdf} % 0.45
+        \includegraphics[width=\textwidth]{./figs/PCA_embeddings.pdf} % 0.45
+        \vspace{1em}
+        \caption{\textbf{Visualization of the predicted single-instance mask latent spaces} -- Each column represents a 2D image from the 3D stack (only five are shown here). \textbf{(a)} Ground-truth labels. \textbf{(b)} Raw image given as input to the model. \textbf{(c-d-e-f)} Visualization of the first three principal components of the $32$-dimensional mask latent spaces predicted by the \encBr branches ENB$_{i=1,2,3,4}$ in our model. Note how latent spaces learned at different levels of the U-Net pyramid show different feature-scales, because they encode \maskname masks at different resolutions.}
+    \label{fig:PCA_embeddings}
 \end{figure}
 
 \begin{table}[t]

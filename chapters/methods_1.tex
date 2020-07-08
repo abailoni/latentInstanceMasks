@@ -5,7 +5,7 @@
         \centering
         % \includegraphics[width=0.4\textwidth,trim=0.25in 0.25in 0.68in 0.36in,clip]{./figs/SSBM_experiments.pdf} % 0.45
         \includegraphics[width=0.99\textwidth]{./figs/valid_masks.pdf} % 0.45
-        \captionof{figure}{Some examples of possible two-dimensional binary \maskname masks. Masks \textbf{(a-b)} represent meaningful examples of expected masks. Mask \textbf{(c)} is not expected because it does not contain the central pixel. Mask \textbf{(d)} is also not meaningful because it is composed of multiple connected components.}
+        \captionof{figure}{Examples of expected and not expected binary 2D \maskname masks. Masks \textbf{(a-b)} represent two possible meaningful central instance masks. Mask \textbf{(c)} is not expected because it does not contain the central pixel. Mask \textbf{(d)} is not an expected mask because it presents more than one connected component.}
     \label{fig:valid_masks}
 \end{minipage}\hfill
 \begin{minipage}[t]{0.58\textwidth}
@@ -18,7 +18,7 @@
 
 \begin{algorithm}[t]
   \begin{flushleft}
-  \caption{: Affinities from aggregated \maskname masks}
+  \caption{: Affinities from Aggregated Central Instance Masks}
    \hspace*{\algorithmicindent} \textbf{Input:} Graph $\mathcal{G}(V,E)$; \maskname masks $\mathcal{M}_{\coord{u}}: \mathcal{N}_{K\times K} \rightarrow [0,1]$  \\
   \hspace*{\algorithmicindent} \textbf{Output:} Affinities $\bar{a}_e\in[0,1]$ with variance $\sigma^2_e$ for all edges $e\in E$\\
   \hspace*{\algorithmicindent} 
